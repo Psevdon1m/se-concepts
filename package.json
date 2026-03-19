@@ -28,6 +28,7 @@
     "oxfmt": "^0.35.0",
     "oxlint": "~1.50.0",
     "vite": "beta",
+    "vite-plugin-pwa": "^1.2.0",
     "vite-plugin-vue-devtools": "^8.0.6"
   },
   "engines": {
