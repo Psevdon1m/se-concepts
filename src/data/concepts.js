@@ -1,6 +1,7 @@
 export const categories = [
   {
     id: 'cat-principles',
+    slug: 'principles',
     title: 'Principles & SOLID',
     concepts: [
       { id: 'ioc', name: 'IoC', oneLiner: "Don't call us, we'll call you — framework controls the flow, not your code." },
@@ -14,6 +15,7 @@ export const categories = [
   },
   {
     id: 'cat-grasp',
+    slug: 'grasp',
     title: 'GRASP',
     concepts: [
       { id: 'grasp', name: 'GRASP Patterns', oneLiner: 'Nine responsibility-assignment principles: Creator, Information Expert, Controller, Low Coupling, High Cohesion, Polymorphism, Indirection, Pure Fabrication, Protected Variations.' },
@@ -21,6 +23,7 @@ export const categories = [
   },
   {
     id: 'cat-gof',
+    slug: 'gof',
     title: 'GoF Patterns',
     concepts: [
       { id: 'builder', name: 'Builder', oneLiner: 'Construct complex objects step-by-step, separating construction from representation.' },
@@ -39,6 +42,7 @@ export const categories = [
   },
   {
     id: 'cat-arch',
+    slug: 'architecture',
     title: 'Architecture',
     concepts: [
       { id: 'ddd', name: 'DDD', oneLiner: 'Model software around the business domain using ubiquitous language and bounded contexts.' },
@@ -49,6 +53,7 @@ export const categories = [
   },
   {
     id: 'cat-concurrency',
+    slug: 'concurrency',
     title: 'Concurrency & Messaging',
     concepts: [
       { id: 'actor', name: 'Actor Model', oneLiner: 'Concurrency via isolated actors that communicate only through async messages.' },
@@ -59,6 +64,7 @@ export const categories = [
   },
   {
     id: 'cat-data',
+    slug: 'data',
     title: 'Data Patterns',
     concepts: [
       { id: 'repository', name: 'Repository', oneLiner: 'Mediate between domain and data mapping using a collection-like interface for aggregates.' },
@@ -68,6 +74,7 @@ export const categories = [
   },
   {
     id: 'cat-theory',
+    slug: 'theory',
     title: 'Type Theory & Complexity',
     concepts: [
       { id: 'type-systems', name: 'Type Systems', oneLiner: 'Classify values to prevent illegal operations at compile time — more types, fewer bugs.' },
@@ -79,6 +86,7 @@ export const categories = [
   },
   {
     id: 'cat-distributed',
+    slug: 'distributed',
     title: 'Distributed Systems',
     concepts: [
       { id: 'cap', name: 'CAP Theorem', oneLiner: "Pick two of three: Consistency, Availability, Partition tolerance — you can't have all three." },
@@ -92,6 +100,7 @@ export const categories = [
   },
   {
     id: 'cat-lowlevel',
+    slug: 'low-level',
     title: 'Low-Level & Performance',
     concepts: [
       { id: 'cas', name: 'CAS & Atomics', oneLiner: 'Compare-and-swap: lock-free atomic update — if value == expected, swap it, else retry.' },
@@ -103,6 +112,7 @@ export const categories = [
   },
   {
     id: 'cat-reliability',
+    slug: 'reliability',
     title: 'Reliability',
     concepts: [
       { id: 'idempotency', name: 'Idempotency', oneLiner: 'Same operation applied multiple times produces the same result — safe to retry.' },

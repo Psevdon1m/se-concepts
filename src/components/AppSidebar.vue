@@ -3,7 +3,6 @@ import { categories } from '@/data/concepts.js'
 
 defineProps({
   modelValue: { type: Boolean, default: false },
-  activeSectionId: { type: String, default: '' },
 })
 
 const emit = defineEmits(['update:modelValue'])
@@ -15,17 +14,24 @@ function onLinkClick() {
 
 <template>
   <nav class="sidebar" :class="{ open: modelValue }">
-    <h2>SE Concepts</h2>
+    <h2>
+      <router-link to="/" class="sidebar-home" @click="onLinkClick">
+        SE Concepts
+      </router-link>
+    </h2>
     <div v-for="cat in categories" :key="cat.id" class="nav-group">
-      <div class="nav-group-title">{{ cat.title }}</div>
+      <router-link
+        :to="`/${cat.slug}`"
+        class="nav-group-title"
+        @click="onLinkClick"
+      >{{ cat.title }}</router-link>
       <div class="nav-links">
-        <a
+        <router-link
           v-for="concept in cat.concepts"
           :key="concept.id"
-          :href="`#${concept.id}`"
-          :class="{ active: activeSectionId === concept.id }"
+          :to="{ path: `/${cat.slug}`, hash: `#${concept.id}` }"
           @click="onLinkClick"
-        >{{ concept.name }}</a>
+        >{{ concept.name }}</router-link>
       </div>
     </div>
   </nav>

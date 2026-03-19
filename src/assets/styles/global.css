@@ -23,21 +23,24 @@ body {
   z-index: 100;
   transition: transform 0.3s;
 }
-.sidebar h2 { padding: 0 20px 15px; font-size: 16px; color: var(--accent); border-bottom: 1px solid var(--border); margin-bottom: 10px; }
+.sidebar h2 { padding: 0 20px 15px; font-size: 16px; border-bottom: 1px solid var(--border); margin-bottom: 10px; }
+.sidebar-home { color: var(--accent); text-decoration: none; }
+.sidebar-home:hover { opacity: 0.8; }
 .nav-group { margin-bottom: 5px; }
 .nav-group-title {
-  padding: 8px 20px; font-size: 11px; text-transform: uppercase;
+  display: block; padding: 8px 20px; font-size: 11px; text-transform: uppercase;
   letter-spacing: 1.5px; color: var(--text2); font-weight: 700;
-  cursor: pointer; user-select: none;
+  cursor: pointer; user-select: none; text-decoration: none;
 }
 .nav-group-title:hover { color: var(--text); }
+.nav-group-title.router-link-active { color: var(--accent); }
 .nav-links a {
   display: block; padding: 4px 20px 4px 30px;
   color: var(--text2); text-decoration: none; font-size: 13px;
   border-left: 2px solid transparent; transition: all 0.15s;
 }
 .nav-links a:hover { color: var(--text); background: var(--bg3); border-left-color: var(--accent); }
-.nav-links a.active { color: var(--accent); border-left-color: var(--accent); }
+.nav-links a.router-link-active { color: var(--accent); border-left-color: var(--accent); }
 
 /* Main */
 main {

@@ -308,7 +308,7 @@ api.interceptors.response.use(
 <span class="cmt">// MenuItem.vue</span>
 &lt;template&gt;
   &lt;li&gt;
-    {{ item.label }}
+    &#123;&#123; item.label &#125;&#125;
     &lt;ul v-if=<span class="str">"item.children?.length"</span>&gt;
       &lt;MenuItem v-for=<span class="str">"child in item.children"</span>
         :key=<span class="str">"child.id"</span> :item=<span class="str">"child"</span> /&gt;
