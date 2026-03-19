@@ -1,11 +1,21 @@
-<script setup></script>
+<script setup>
+import { ref } from 'vue'
+import AppSidebar from '@/components/AppSidebar.vue'
+import BackToTop from '@/components/BackToTop.vue'
+
+const sidebarOpen = ref(false)
+</script>
 
 <template>
-  <h1>You did it!</h1>
-  <p>
-    Visit <a href="https://vuejs.org/" target="_blank" rel="noopener">vuejs.org</a> to read the
-    documentation
-  </p>
-</template>
+  <button class="menu-toggle" @click="sidebarOpen = !sidebarOpen">
+    &#9776;
+  </button>
 
-<style scoped></style>
+  <AppSidebar v-model="sidebarOpen" />
+
+  <main>
+    <RouterView />
+  </main>
+
+  <BackToTop />
+</template>

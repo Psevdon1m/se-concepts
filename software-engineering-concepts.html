@@ -1,0 +1,3380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Software Engineering Concepts — Deep Dive</title>
+<style>
+  :root {
+    --bg: #0d1117;
+    --bg2: #161b22;
+    --bg3: #1c2333;
+    --border: #30363d;
+    --text: #e6edf3;
+    --text2: #8b949e;
+    --accent: #58a6ff;
+    --green: #3fb950;
+    --red: #f85149;
+    --orange: #d29922;
+    --purple: #bc8cff;
+    --pink: #f778ba;
+    --cyan: #39d353;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; scroll-padding-top: 80px; }
+  body {
+    font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+    display: flex;
+  }
+
+  /* Sidebar */
+  #sidebar {
+    position: fixed; top: 0; left: 0;
+    width: 280px; height: 100vh;
+    background: var(--bg2);
+    border-right: 1px solid var(--border);
+    overflow-y: auto; padding: 20px 0;
+    z-index: 100;
+    transition: transform 0.3s;
+  }
+  #sidebar h2 { padding: 0 20px 15px; font-size: 16px; color: var(--accent); border-bottom: 1px solid var(--border); margin-bottom: 10px; }
+  .nav-group { margin-bottom: 5px; }
+  .nav-group-title {
+    padding: 8px 20px; font-size: 11px; text-transform: uppercase;
+    letter-spacing: 1.5px; color: var(--text2); font-weight: 700;
+    cursor: pointer; user-select: none;
+  }
+  .nav-group-title:hover { color: var(--text); }
+  .nav-links a {
+    display: block; padding: 4px 20px 4px 30px;
+    color: var(--text2); text-decoration: none; font-size: 13px;
+    border-left: 2px solid transparent; transition: all 0.15s;
+  }
+  .nav-links a:hover { color: var(--text); background: var(--bg3); border-left-color: var(--accent); }
+  .nav-links a.active { color: var(--accent); border-left-color: var(--accent); }
+
+  /* Main */
+  main {
+    margin-left: 280px; flex: 1;
+    max-width: 960px; padding: 40px 50px 100px;
+  }
+
+  h1 { font-size: 36px; margin-bottom: 10px; background: linear-gradient(135deg, var(--accent), var(--purple)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .subtitle { color: var(--text2); font-size: 16px; margin-bottom: 40px; }
+
+  /* Cheat Sheet */
+  #cheat-sheet { margin-bottom: 60px; }
+  #cheat-sheet h2 { font-size: 24px; margin-bottom: 20px; color: var(--accent); }
+  .cheat-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .cheat-table th { text-align: left; padding: 10px 12px; background: var(--bg3); color: var(--accent); border-bottom: 2px solid var(--border); position: sticky; top: 0; }
+  .cheat-table td { padding: 8px 12px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  .cheat-table tr:hover td { background: var(--bg2); }
+  .cheat-table .concept-name { color: var(--purple); font-weight: 600; white-space: nowrap; }
+
+  /* Category */
+  .category { margin-bottom: 60px; }
+  .category > h2 { font-size: 26px; padding-bottom: 10px; border-bottom: 2px solid var(--border); margin-bottom: 30px; color: var(--orange); }
+
+  /* Concept Card */
+  .concept {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    margin-bottom: 24px;
+    overflow: hidden;
+    transition: border-color 0.2s;
+  }
+  .concept:hover { border-color: var(--accent); }
+  .concept-header {
+    padding: 20px 24px;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: space-between;
+    user-select: none;
+  }
+  .concept-header h3 { font-size: 20px; color: var(--text); }
+  .concept-header .badge {
+    font-size: 11px; padding: 3px 10px; border-radius: 20px;
+    font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;
+  }
+  .badge-principle { background: rgba(88,166,255,0.15); color: var(--accent); }
+  .badge-pattern { background: rgba(188,140,255,0.15); color: var(--purple); }
+  .badge-architecture { background: rgba(210,153,34,0.15); color: var(--orange); }
+  .badge-distributed { background: rgba(247,120,186,0.15); color: var(--pink); }
+  .badge-data { background: rgba(63,185,80,0.15); color: var(--green); }
+  .badge-theory { background: rgba(57,211,83,0.15); color: var(--cyan); }
+  .badge-lowlevel { background: rgba(248,81,73,0.15); color: var(--red); }
+  .badge-reliability { background: rgba(210,153,34,0.15); color: var(--orange); }
+
+  .chevron { transition: transform 0.3s; font-size: 18px; color: var(--text2); }
+  .concept.open .chevron { transform: rotate(180deg); }
+  .concept-body { display: none; padding: 0 24px 24px; }
+  .concept.open .concept-body { display: block; }
+
+  .one-liner { font-style: italic; color: var(--accent); margin-bottom: 16px; padding: 10px 16px; background: rgba(88,166,255,0.08); border-left: 3px solid var(--accent); border-radius: 0 8px 8px 0; }
+
+  .section-label { font-size: 12px; text-transform: uppercase; letter-spacing: 1px; color: var(--text2); font-weight: 700; margin: 16px 0 8px; }
+
+  .problem-box, .good-box, .bad-box {
+    padding: 14px 18px; border-radius: 8px; margin-bottom: 12px; font-size: 14px;
+  }
+  .problem-box { background: rgba(210,153,34,0.1); border-left: 3px solid var(--orange); }
+  .bad-box { background: rgba(248,81,73,0.08); border-left: 3px solid var(--red); }
+  .good-box { background: rgba(63,185,80,0.08); border-left: 3px solid var(--green); }
+
+  pre {
+    background: var(--bg); border: 1px solid var(--border);
+    border-radius: 8px; padding: 16px; overflow-x: auto;
+    font-size: 13px; line-height: 1.5; margin: 8px 0 12px;
+    font-family: 'Fira Code', 'Cascadia Code', 'JetBrains Mono', monospace;
+  }
+  code { font-family: inherit; }
+  .kw { color: var(--purple); }
+  .fn { color: var(--accent); }
+  .str { color: var(--green); }
+  .cmt { color: var(--text2); }
+
+  .strengths, .weaknesses { padding: 0; list-style: none; margin: 4px 0 12px; }
+  .strengths li::before { content: "✓ "; color: var(--green); font-weight: bold; }
+  .weaknesses li::before { content: "✗ "; color: var(--red); font-weight: bold; }
+  .strengths li, .weaknesses li { padding: 3px 0; font-size: 14px; }
+
+  .real-world { padding: 12px 16px; background: var(--bg3); border-radius: 8px; font-size: 14px; color: var(--text2); }
+  .real-world strong { color: var(--text); }
+
+  /* Toggle */
+  #menu-toggle { display: none; position: fixed; top: 15px; left: 15px; z-index: 200; background: var(--bg2); border: 1px solid var(--border); color: var(--text); padding: 8px 12px; border-radius: 8px; cursor: pointer; font-size: 18px; }
+  @media (max-width: 900px) {
+    #sidebar { transform: translateX(-100%); }
+    #sidebar.open { transform: translateX(0); }
+    #menu-toggle { display: block; }
+    main { margin-left: 0; padding: 40px 20px 100px; }
+  }
+
+  /* Back to top */
+  #top-btn { position: fixed; bottom: 30px; right: 30px; background: var(--accent); color: var(--bg); border: none; width: 44px; height: 44px; border-radius: 50%; font-size: 20px; cursor: pointer; opacity: 0; transition: opacity 0.3s; z-index: 50; }
+  #top-btn.visible { opacity: 1; }
+
+  .sw-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  @media (max-width: 700px) { .sw-grid { grid-template-columns: 1fr; } }
+
+  /* Vue 3 / TS example sections */
+  .vue-box {
+    background: rgba(66,184,131,0.08);
+    border-left: 3px solid #42b883;
+    padding: 14px 18px;
+    border-radius: 8px;
+    margin-bottom: 12px;
+    font-size: 14px;
+  }
+  .vue-label {
+    display: inline-block;
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 4px;
+    background: rgba(66,184,131,0.15);
+    color: #42b883;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 8px;
+  }
+</style>
+</head>
+<body>
+
+<button id="menu-toggle" onclick="document.getElementById('sidebar').classList.toggle('open')">☰</button>
+
+<nav id="sidebar">
+  <h2>SE Concepts</h2>
+  <div class="nav-group">
+    <div class="nav-group-title">Principles &amp; SOLID</div>
+    <div class="nav-links">
+      <a href="#ioc">IoC</a><a href="#di">DI</a>
+      <a href="#srp">SRP</a><a href="#ocp">OCP</a><a href="#lsp">LSP</a><a href="#isp">ISP</a><a href="#dip">DIP</a>
+    </div>
+  </div>
+  <div class="nav-group">
+    <div class="nav-group-title">GRASP</div>
+    <div class="nav-links"><a href="#grasp">GRASP Patterns</a></div>
+  </div>
+  <div class="nav-group">
+    <div class="nav-group-title">GoF Patterns</div>
+    <div class="nav-links">
+      <a href="#builder">Builder</a><a href="#adapter">Adapter</a><a href="#facade">Facade</a>
+      <a href="#proxy">Proxy</a><a href="#decorator">Decorator</a><a href="#composite">Composite</a>
+      <a href="#bridge">Bridge</a><a href="#strategy">Strategy</a><a href="#observer">Observer</a>
+      <a href="#mediator">Mediator</a><a href="#iterator">Iterator</a><a href="#visitor">Visitor</a>
+    </div>
+  </div>
+  <div class="nav-group">
+    <div class="nav-group-title">Architecture</div>
+    <div class="nav-links">
+      <a href="#ddd">DDD</a><a href="#clean-arch">Clean Architecture</a>
+      <a href="#cqrs">CQRS</a><a href="#event-sourcing">Event Sourcing</a>
+    </div>
+  </div>
+  <div class="nav-group">
+    <div class="nav-group-title">Concurrency &amp; Messaging</div>
+    <div class="nav-links">
+      <a href="#actor">Actor Model</a><a href="#reactor">Reactor</a>
+      <a href="#pubsub">Pub/Sub</a><a href="#saga">SAGA</a>
+    </div>
+  </div>
+  <div class="nav-group">
+    <div class="nav-group-title">Data Patterns</div>
+    <div class="nav-links">
+      <a href="#repository">Repository</a><a href="#uow">Unit of Work</a><a href="#data-mapper">Data Mapper</a>
+    </div>
+  </div>
+  <div class="nav-group">
+    <div class="nav-group-title">Type Theory &amp; Complexity</div>
+    <div class="nav-links">
+      <a href="#type-systems">Type Systems</a><a href="#adt">ADT</a>
+      <a href="#big-o">Big O</a><a href="#amortized">Amortized Complexity</a><a href="#hashing">Hashing</a>
+    </div>
+  </div>
+  <div class="nav-group">
+    <div class="nav-group-title">Distributed Systems</div>
+    <div class="nav-links">
+      <a href="#cap">CAP Theorem</a><a href="#acid">ACID</a><a href="#base">BASE</a>
+      <a href="#consistency">Consistency Models</a><a href="#consensus">Consensus</a>
+      <a href="#paxos">Paxos</a><a href="#crdt">CRDT</a>
+    </div>
+  </div>
+  <div class="nav-group">
+    <div class="nav-group-title">Low-Level &amp; Performance</div>
+    <div class="nav-links">
+      <a href="#cas">CAS &amp; Atomics</a><a href="#memory-model">Memory Model</a>
+      <a href="#cache-locality">Cache Locality</a><a href="#gc">Garbage Collection</a>
+      <a href="#thread-safety">Thread Safety</a>
+    </div>
+  </div>
+  <div class="nav-group">
+    <div class="nav-group-title">Reliability</div>
+    <div class="nav-links">
+      <a href="#idempotency">Idempotency</a><a href="#rate-limiting">Rate Limiting</a>
+      <a href="#fault-tolerance">Fault Tolerance</a>
+    </div>
+  </div>
+</nav>
+
+<main>
+<h1>Software Engineering Concepts</h1>
+<p class="subtitle">Deep dive with examples, trade-offs, and interview cheat sheet</p>
+
+<!-- ==================== CHEAT SHEET ==================== -->
+<section id="cheat-sheet">
+<h2>Interview Cheat Sheet</h2>
+<table class="cheat-table">
+<thead><tr><th>Concept</th><th>One-Liner</th></tr></thead>
+<tbody>
+<tr><td class="concept-name">IoC</td><td>Don't call us, we'll call you — framework controls the flow, not your code.</td></tr>
+<tr><td class="concept-name">DI</td><td>Pass dependencies in from outside instead of creating them inside.</td></tr>
+<tr><td class="concept-name">SRP</td><td>A class should have only one reason to change.</td></tr>
+<tr><td class="concept-name">OCP</td><td>Open for extension, closed for modification — add behavior without editing existing code.</td></tr>
+<tr><td class="concept-name">LSP</td><td>Subtypes must be substitutable for their base types without breaking correctness.</td></tr>
+<tr><td class="concept-name">ISP</td><td>No client should be forced to depend on methods it doesn't use.</td></tr>
+<tr><td class="concept-name">DIP</td><td>High-level modules depend on abstractions, not concrete implementations.</td></tr>
+<tr><td class="concept-name">GRASP</td><td>Nine responsibility-assignment principles: Creator, Information Expert, Controller, Low Coupling, High Cohesion, Polymorphism, Indirection, Pure Fabrication, Protected Variations.</td></tr>
+<tr><td class="concept-name">Builder</td><td>Construct complex objects step-by-step, separating construction from representation.</td></tr>
+<tr><td class="concept-name">Adapter</td><td>Convert one interface into another that clients expect — a plug converter for code.</td></tr>
+<tr><td class="concept-name">Facade</td><td>Provide a simplified interface to a complex subsystem.</td></tr>
+<tr><td class="concept-name">Proxy</td><td>A surrogate that controls access to the real object (lazy load, cache, auth).</td></tr>
+<tr><td class="concept-name">Decorator</td><td>Wrap an object to add behavior dynamically without subclassing.</td></tr>
+<tr><td class="concept-name">Composite</td><td>Treat individual objects and compositions uniformly via a tree structure.</td></tr>
+<tr><td class="concept-name">Bridge</td><td>Decouple abstraction from implementation so both can vary independently.</td></tr>
+<tr><td class="concept-name">Strategy</td><td>Define a family of algorithms, encapsulate each, and make them interchangeable at runtime.</td></tr>
+<tr><td class="concept-name">Observer</td><td>One-to-many notification: when subject changes state, all dependents are notified.</td></tr>
+<tr><td class="concept-name">Mediator</td><td>Centralize complex communications between objects through a single coordinator.</td></tr>
+<tr><td class="concept-name">Iterator</td><td>Access elements of a collection sequentially without exposing its internal structure.</td></tr>
+<tr><td class="concept-name">Visitor</td><td>Add new operations to existing object structures without modifying them.</td></tr>
+<tr><td class="concept-name">DDD</td><td>Model software around the business domain using ubiquitous language and bounded contexts.</td></tr>
+<tr><td class="concept-name">Clean Arch</td><td>Dependencies point inward — business rules know nothing about frameworks or DB.</td></tr>
+<tr><td class="concept-name">CQRS</td><td>Separate read models from write models for independent scaling and optimization.</td></tr>
+<tr><td class="concept-name">Event Sourcing</td><td>Store state as a sequence of events, not current snapshot — full history, replay capability.</td></tr>
+<tr><td class="concept-name">Actor Model</td><td>Concurrency via isolated actors that communicate only through async messages.</td></tr>
+<tr><td class="concept-name">Reactor</td><td>Single-threaded event loop dispatching I/O events to handlers — non-blocking by design.</td></tr>
+<tr><td class="concept-name">Pub/Sub</td><td>Publishers emit events to topics; subscribers listen — full decoupling of producers and consumers.</td></tr>
+<tr><td class="concept-name">SAGA</td><td>Manage distributed transactions via a sequence of local transactions with compensating actions.</td></tr>
+<tr><td class="concept-name">Repository</td><td>Mediate between domain and data mapping using a collection-like interface for aggregates.</td></tr>
+<tr><td class="concept-name">Unit of Work</td><td>Track all changes during a business transaction and commit them atomically.</td></tr>
+<tr><td class="concept-name">Data Mapper</td><td>Transfer data between objects and DB while keeping them independent of each other.</td></tr>
+<tr><td class="concept-name">Type Systems</td><td>Classify values to prevent illegal operations at compile time — more types, fewer bugs.</td></tr>
+<tr><td class="concept-name">ADT</td><td>Algebraic Data Types: combine types via sum (OR) and product (AND) for precise domain modeling.</td></tr>
+<tr><td class="concept-name">Big O</td><td>Upper bound on growth rate — how algorithm time/space scales with input size.</td></tr>
+<tr><td class="concept-name">Amortized</td><td>Average cost per operation over a worst-case sequence — occasional expensive ops are OK.</td></tr>
+<tr><td class="concept-name">Hashing</td><td>Map arbitrary data to fixed-size values for O(1) average lookup — the backbone of hash maps.</td></tr>
+<tr><td class="concept-name">CAP</td><td>Pick two of three: Consistency, Availability, Partition tolerance — you can't have all three.</td></tr>
+<tr><td class="concept-name">ACID</td><td>Atomicity, Consistency, Isolation, Durability — guarantees for reliable DB transactions.</td></tr>
+<tr><td class="concept-name">BASE</td><td>Basically Available, Soft state, Eventually consistent — relaxed ACID for distributed systems.</td></tr>
+<tr><td class="concept-name">Consistency Models</td><td>Spectrum from linearizable (strongest) to eventual (weakest) — defines what readers see after writes.</td></tr>
+<tr><td class="concept-name">Consensus</td><td>Agreement among distributed nodes on a single value despite failures — the core of distributed systems.</td></tr>
+<tr><td class="concept-name">Paxos</td><td>Consensus protocol: proposers, acceptors, learners reach agreement in async networks with failures.</td></tr>
+<tr><td class="concept-name">CRDT</td><td>Conflict-free Replicated Data Types — merge without coordination, always converge.</td></tr>
+<tr><td class="concept-name">CAS &amp; Atomics</td><td>Compare-and-swap: lock-free atomic update — if value == expected, swap it, else retry.</td></tr>
+<tr><td class="concept-name">Memory Model</td><td>Rules for how threads see each other's memory writes — defines visibility and ordering guarantees.</td></tr>
+<tr><td class="concept-name">Cache Locality</td><td>Access memory sequentially to exploit CPU cache lines — arrays beat linked lists for traversal.</td></tr>
+<tr><td class="concept-name">GC</td><td>Automatic memory reclamation — trades manual control for safety, with pause-time trade-offs.</td></tr>
+<tr><td class="concept-name">Thread Safety</td><td>Code that works correctly under concurrent access — via locks, immutability, or confinement.</td></tr>
+<tr><td class="concept-name">Idempotency</td><td>Same operation applied multiple times produces the same result — safe to retry.</td></tr>
+<tr><td class="concept-name">Rate Limiting</td><td>Cap request throughput to protect services — token bucket, sliding window, or leaky bucket.</td></tr>
+<tr><td class="concept-name">Fault Tolerance</td><td>System continues operating despite component failures — circuit breakers, retries, redundancy.</td></tr>
+</tbody>
+</table>
+</section>
+
+<!-- ==================== PRINCIPLES ==================== -->
+<section class="category" id="cat-principles">
+<h2>Principles &amp; SOLID</h2>
+
+<!-- IoC -->
+<div class="concept" id="ioc">
+<div class="concept-header" onclick="this.parentElement.classList.toggle('open')">
+  <h3>Inversion of Control (IoC)</h3>
+  <div><span class="badge badge-principle">Principle</span> <span class="chevron">▼</span></div>
+</div>
+<div class="concept-body">
+<div class="one-liner">Don't call us, we'll call you — the framework controls the flow, not your code.</div>
+<div class="section-label">Problem</div>
+<div class="problem-box">Your code controls everything: object creation, lifecycle, flow. Tight coupling everywhere. Changing one part means rewriting many others.</div>
+<div class="section-label">Bad Approach</div>
+<div class="bad-box">
+<pre><span class="cmt">// Your code controls everything</span>
+<span class="kw">class</span> OrderService {
+  process(order) {
+    <span class="kw">const</span> db = <span class="kw">new</span> MySQLDatabase();      <span class="cmt">// YOU create it</span>
+    <span class="kw">const</span> mailer = <span class="kw">new</span> SmtpMailer();      <span class="cmt">// YOU create it</span>
+    <span class="kw">const</span> logger = <span class="kw">new</span> FileLogger();      <span class="cmt">// YOU create it</span>
+    db.save(order);
+    mailer.send(order.email, <span class="str">"Confirmed"</span>);
+    logger.log(<span class="str">"Order processed"</span>);
+  }
+}</pre>
+</div>
+<div class="section-label">Good Approach</div>
+<div class="good-box">
+<pre><span class="cmt">// Framework/container controls creation and wiring</span>
+<span class="kw">class</span> OrderService {
+  <span class="kw">constructor</span>(db, mailer, logger) {   <span class="cmt">// GIVEN to you</span>
+    <span class="kw">this</span>.db = db;
+    <span class="kw">this</span>.mailer = mailer;
+    <span class="kw">this</span>.logger = logger;
+  }
+  process(order) {
+    <span class="kw">this</span>.db.save(order);
+    <span class="kw">this</span>.mailer.send(order.email, <span class="str">"Confirmed"</span>);
+    <span class="kw">this</span>.logger.log(<span class="str">"Order processed"</span>);
+  }
+}</pre>
+</div>
+<div class="sw-grid">
+  <div><div class="section-label">Strengths</div><ul class="strengths"><li>Loose coupling</li><li>Easy to test with mocks</li><li>Swappable implementations</li></ul></div>
+  <div><div class="section-label">Weaknesses</div><ul class="weaknesses"><li>Harder to trace flow</li><li>Container configuration complexity</li><li>Learning curve</li></ul></div>
+</div>
+<div class="section-label">Real-World</div>
+<div class="real-world"><strong>Spring Framework, Angular, NestJS</strong> — your controllers/services are instantiated and wired by the framework, not by you calling <code>new</code>.</div>
+<div class="section-label">Vue 3 / TS Example</div>
+<div class="vue-box">
+<div class="vue-label">Vue 3 / TS</div>
+<pre><span class="cmt">// Vue's plugin system — Vue controls the lifecycle, not you</span>
+<span class="kw">const</span> app = createApp(App);
+app.use(piniaPlugin);     <span class="cmt">// Vue calls plugin.install()</span>
+app.use(routerPlugin);    <span class="cmt">// You don't call router.init()</span>
+app.use(i18nPlugin);      <span class="cmt">// Framework orchestrates everything</span>
+
+<span class="cmt">// provide/inject — parent controls what child receives</span>
+<span class="cmt">// Parent component</span>
+<span class="kw">const</span> apiService = <span class="kw">new</span> ApiService();
+provide(<span class="str">'api'</span>, apiService);  <span class="cmt">// Parent decides what to provide</span>
+
+<span class="cmt">// Child component — doesn't create its own dependency</span>
+<span class="kw">const</span> api = inject(<span class="str">'api'</span>);   <span class="cmt">// Given to you, not created by you</span></pre>
+</div>
+
+</div></div>
+
+<!-- DI -->
+<div class="concept" id="di">
+<div class="concept-header" onclick="this.parentElement.classList.toggle('open')">
+  <h3>Dependency Injection (DI)</h3>
+  <div><span class="badge badge-principle">Principle</span> <span class="chevron">▼</span></div>
+</div>
+<div class="concept-body">
+<div class="one-liner">Pass dependencies in from outside instead of creating them inside.</div>
+<div class="section-label">Problem</div>
+<div class="problem-box">Classes create their own dependencies, making them impossible to test in isolation or swap implementations.</div>
+<div class="section-label">Bad Approach</div>
+<div class="bad-box">
+<pre><span class="kw">class</span> UserController {
+  <span class="fn">getUser</span>(id) {
+    <span class="kw">const</span> repo = <span class="kw">new</span> PostgresUserRepo(); <span class="cmt">// Hardcoded!</span>
+    <span class="kw">return</span> repo.findById(id);
+  }
+}
+<span class="cmt">// Can't test without a real Postgres instance</span></pre>
+</div>
+<div class="section-label">Good Approach</div>
+<div class="good-box">
+<pre><span class="kw">class</span> UserController {
+  <span class="kw">constructor</span>(<span class="kw">private</span> userRepo: UserRepository) {}
+
+  <span class="fn">getUser</span>(id) {
+    <span class="kw">return this</span>.userRepo.findById(id);
+  }
+}
+<span class="cmt">// Test: new UserController(mockRepo)</span>
+<span class="cmt">// Prod: new UserController(new PostgresUserRepo())</span></pre>
+</div>
+<div class="sw-grid">
+  <div><div class="section-label">Strengths</div><ul class="strengths"><li>Testability (inject mocks)</li><li>Flexibility (swap DB, cache, etc.)</li><li>Explicit dependencies</li></ul></div>
+  <div><div class="section-label">Weaknesses</div><ul class="weaknesses"><li>More boilerplate / wiring</li><li>Can hide complexity in container config</li></ul></div>
+</div>
+<div class="section-label">Real-World</div>
+<div class="real-world"><strong>Any backend framework</strong> — inject a PaymentGateway interface so you can swap Stripe for a mock in tests or switch to Adyen in production.</div>
+<div class="section-label">Vue 3 / TS Example</div>
+<div class="vue-box">
+<div class="vue-label">Vue 3 / TS</div>
+<pre><span class="cmt">// Typed provide/inject with InjectionKey</span>
+<span class="kw">interface</span> AuthService { login(token: <span class="kw">string</span>): Promise&lt;<span class="kw">void</span>&gt;; logout(): <span class="kw">void</span>; }
+<span class="kw">class</span> RealAuthService <span class="kw">implements</span> AuthService {
+  <span class="kw">async</span> login(token: <span class="kw">string</span>) { <span class="cmt">/* call API */</span> }
+  logout() { <span class="cmt">/* clear session */</span> }
+}
+
+<span class="kw">const</span> AuthServiceKey: InjectionKey&lt;AuthService&gt; = Symbol(<span class="str">'auth'</span>);
+
+<span class="cmt">// Provider component</span>
+provide(AuthServiceKey, <span class="kw">new</span> RealAuthService());
+
+<span class="cmt">// Consumer component — depends on abstraction</span>
+<span class="kw">const</span> auth = inject(AuthServiceKey)!;
+auth.login(<span class="str">'telegram-init-data'</span>); <span class="cmt">// uses the injected service</span>
+
+<span class="cmt">// Composable accepting deps as params (testable!)</span>
+<span class="kw">interface</span> WalletApi { getBalance(): Promise&lt;<span class="kw">string</span>&gt;; }
+<span class="kw">const</span> defaultWalletApi: WalletApi = { getBalance: () =&gt; api.get(<span class="str">'/balance'</span>) };
+
+<span class="kw">function</span> <span class="fn">useWallet</span>(walletApi: WalletApi = defaultWalletApi) {
+  <span class="kw">const</span> balance = ref(<span class="str">'0'</span>);
+  <span class="kw">const</span> fetchBalance = <span class="kw">async</span> () =&gt; {
+    balance.value = <span class="kw">await</span> walletApi.getBalance();
+  };
+  <span class="kw">return</span> { balance, fetchBalance };
+}
+<span class="cmt">// Test: useWallet(mockApi)  Prod: useWallet()</span></pre>
+</div>
+
+</div></div>
+
+<!-- SRP -->
+<div class="concept" id="srp">
+<div class="concept-header" onclick="this.parentElement.classList.toggle('open')">
+  <h3>SRP — Single Responsibility Principle</h3>
+  <div><span class="badge badge-principle">SOLID</span> <span class="chevron">▼</span></div>
+</div>
+<div class="concept-body">
+<div class="one-liner">A class should have only one reason to change.</div>
+<div class="section-label">Problem</div>
+<div class="problem-box">A god-class does everything — parsing, validation, DB access, email — so any change risks breaking unrelated features.</div>
+<div class="section-label">Bad Approach</div>
+<div class="bad-box">
+<pre><span class="kw">class</span> Invoice {
+  <span class="fn">calculate</span>() { <span class="cmt">/* business logic */</span> }
+  <span class="fn">saveToDb</span>() { <span class="cmt">/* persistence */</span> }
+  <span class="fn">generatePdf</span>() { <span class="cmt">/* presentation */</span> }
+  <span class="fn">sendEmail</span>() { <span class="cmt">/* notification */</span> }
+}</pre>
+</div>
+<div class="section-label">Good Approach</div>
+<div class="good-box">
+<pre><span class="kw">class</span> Invoice { <span class="fn">calculate</span>() { <span class="cmt">/* only business logic */</span> } }
+<span class="kw">class</span> InvoiceRepository { <span class="fn">save</span>(inv) { <span class="cmt">/* only persistence */</span> } }
+<span class="kw">class</span> InvoicePdfGenerator { <span class="fn">generate</span>(inv) { <span class="cmt">/* only PDF */</span> } }
+<span class="kw">class</span> InvoiceNotifier { <span class="fn">notify</span>(inv) { <span class="cmt">/* only email */</span> } }</pre>
+</div>
+<div class="sw-grid">
+  <div><div class="section-label">Strengths</div><ul class="strengths"><li>Changes are isolated</li><li>Easier to test each piece</li><li>Better team parallelism</li></ul></div>
+  <div><div class="section-label">Weaknesses</div><ul class="weaknesses"><li>More classes to manage</li><li>"One reason to change" is subjective</li></ul></div>
+</div>
+<div class="section-label">Real-World</div>
+<div class="real-world"><strong>Microservices</strong> — each service owns one domain concern. Changing billing logic doesn't require redeploying the notification service.</div>
+<div class="section-label">Vue 3 / TS Example</div>
+<div class="vue-box">
+<div class="vue-label">Vue 3 / TS</div>
+<pre><span class="cmt">// BAD — one composable doing everything</span>
+<span class="kw">function</span> <span class="fn">useUser</span>() {
+  <span class="cmt">// fetching + validation + formatting + caching... 🤮</span>
+}
+
+<span class="cmt">// GOOD — each composable has one responsibility</span>
+<span class="kw">function</span> <span class="fn">useSearch</span>() { <span class="cmt">/* only search state & query */</span> }
+<span class="kw">function</span> <span class="fn">useDebounce</span>(value, ms) { <span class="cmt">/* only debounce logic */</span> }
+<span class="kw">function</span> <span class="fn">useUserApi</span>() { <span class="cmt">/* only API calls */</span> }
+
+<span class="cmt">// Component split: Container vs Presentational</span>
+<span class="cmt">// WalletContainer.vue — data fetching, state management</span>
+<span class="cmt">// WalletAssetsList.vue — pure presentation, receives props</span>
+<span class="cmt">// walletService.ts — API calls only</span>
+<span class="cmt">// useWalletStore.ts — state management only</span></pre>
+</div>
+
+</div></div>
+
+<!-- OCP -->
+<div class="concept" id="ocp">
+<div class="concept-header" onclick="this.parentElement.classList.toggle('open')">
+  <h3>OCP — Open/Closed Principle</h3>
+  <div><span class="badge badge-principle">SOLID</span> <span class="chevron">▼</span></div>
+</div>
+<div class="concept-body">
+<div class="one-liner">Open for extension, closed for modification — add behavior without editing existing code.</div>
+<div class="section-label">Bad Approach</div>
+<div class="bad-box">
+<pre><span class="kw">function</span> <span class="fn">calculateDiscount</span>(type, amount) {
+  <span class="kw">if</span> (type === <span class="str">"regular"</span>) <span class="kw">return</span> amount * 0.05;
+  <span class="kw">if</span> (type === <span class="str">"premium"</span>) <span class="kw">return</span> amount * 0.1;
+  <span class="kw">if</span> (type === <span class="str">"vip"</span>) <span class="kw">return</span> amount * 0.2;
+  <span class="cmt">// Adding new type? Edit this function every time!</span>
+}</pre>
+</div>
+<div class="section-label">Good Approach</div>
+<div class="good-box">
+<pre><span class="kw">interface</span> DiscountStrategy { calculate(amount: number): number; }
+
+<span class="kw">class</span> RegularDiscount <span class="kw">implements</span> DiscountStrategy {
+  calculate(amount) { <span class="kw">return</span> amount * 0.05; }
+}
+<span class="kw">class</span> VipDiscount <span class="kw">implements</span> DiscountStrategy {
+  calculate(amount) { <span class="kw">return</span> amount * 0.2; }
+}
+<span class="cmt">// New type? Just add a new class. No existing code modified.</span></pre>
+</div>
+<div class="sw-grid">
+  <div><div class="section-label">Strengths</div><ul class="strengths"><li>New features without regression risk</li><li>Stable, tested core</li></ul></div>
+  <div><div class="section-label">Weaknesses</div><ul class="weaknesses"><li>Requires upfront abstraction design</li><li>Over-engineering if requirements are stable</li></ul></div>
+</div>
+<div class="section-label">Real-World</div>
+<div class="real-world"><strong>Plugin systems</strong> (Webpack, VS Code) — core is closed; plugins extend behavior without modifying the core.</div>
+<div class="section-label">Vue 3 / TS Example</div>
+<div class="vue-box">
+<div class="vue-label">Vue 3 / TS</div>
+<pre><span class="cmt">// Dynamic component — extend without modifying</span>
+&lt;component :is=<span class="str">"transactionIcons[tx.type]"</span> /&gt;
+
+<span class="kw">const</span> transactionIcons: Record&lt;<span class="kw">string</span>, Component&gt; = {
+  send: TxSendIcon,
+  receive: TxReceiveIcon,
+  <span class="cmt">// Add new type here — no existing code changes</span>
+  swap: TxSwapIcon,
+};
+
+<span class="cmt">// Composable accepting strategy function</span>
+<span class="kw">interface</span> Asset { symbol: <span class="kw">string</span>; name: <span class="kw">string</span>; price: <span class="kw">number</span>; }
+<span class="kw">const</span> assets = ref&lt;Asset[]&gt;([]);
+
+<span class="kw">function</span> <span class="fn">useSortedList</span>&lt;T&gt;(items: Ref&lt;T[]&gt;, compareFn: (a: T, b: T) =&gt; <span class="kw">number</span>) {
+  <span class="kw">return</span> computed(() =&gt; [...items.value].sort(compareFn));
+}
+<span class="cmt">// Open for extension — pass any sort strategy</span>
+<span class="kw">const</span> byPrice = <span class="fn">useSortedList</span>(assets, (a, b) =&gt; b.price - a.price);
+<span class="kw">const</span> byName = <span class="fn">useSortedList</span>(assets, (a, b) =&gt; a.name.localeCompare(b.name));</pre>
+</div>
+
+</div></div>
+
+<!-- LSP -->
+<div class="concept" id="lsp">
+<div class="concept-header" onclick="this.parentElement.classList.toggle('open')">
+  <h3>LSP — Liskov Substitution Principle</h3>
+  <div><span class="badge badge-principle">SOLID</span> <span class="chevron">▼</span></div>
+</div>
+<div class="concept-body">
+<div class="one-liner">Subtypes must be substitutable for their base types without breaking correctness.</div>
+<div class="section-label">Bad Approach</div>
+<div class="bad-box">
+<pre><span class="kw">class</span> Rectangle {
+  setWidth(w) { <span class="kw">this</span>.w = w; }
+  setHeight(h) { <span class="kw">this</span>.h = h; }
+  area() { <span class="kw">return this</span>.w * <span class="kw">this</span>.h; }
+}
+<span class="kw">class</span> Square <span class="kw">extends</span> Rectangle {
+  setWidth(w) { <span class="kw">this</span>.w = w; <span class="kw">this</span>.h = w; } <span class="cmt">// Breaks expectations!</span>
+  setHeight(h) { <span class="kw">this</span>.w = h; <span class="kw">this</span>.h = h; }
+}
+<span class="cmt">// rect.setWidth(5); rect.setHeight(3); rect.area() → expects 15</span>
+<span class="cmt">// With Square: area() → 9. Surprise!</span></pre>
+</div>
+<div class="section-label">Good Approach</div>
+<div class="good-box">
+<pre><span class="kw">interface</span> Shape { area(): number; }
+<span class="kw">class</span> Rectangle <span class="kw">implements</span> Shape { <span class="cmt">/* width × height */</span> }
+<span class="kw">class</span> Square <span class="kw">implements</span> Shape { <span class="cmt">/* side × side */</span> }
+<span class="cmt">// No inheritance, no broken substitution</span></pre>
+</div>
+<div class="sw-grid">
+  <div><div class="section-label">Strengths</div><ul class="strengths"><li>Polymorphism works correctly</li><li>No surprises for callers</li></ul></div>
+  <div><div class="section-label">Weaknesses</div><ul class="weaknesses"><li>Can limit inheritance hierarchies</li><li>Requires careful contract design</li></ul></div>
+</div>
+<div class="section-label">Real-World</div>
+<div class="real-world"><strong>Collection APIs</strong> — <code>List</code>, <code>Set</code>, <code>Map</code> all implement <code>Iterable</code>. Any code accepting <code>Iterable</code> works with all of them.</div>
+<div class="section-label">Vue 3 / TS Example</div>
+<div class="vue-box">
+<div class="vue-label">Vue 3 / TS</div>
+<pre><span class="cmt">// Props contract — IconButton must honor BaseButton's interface</span>
+<span class="cmt">// BaseButton.vue</span>
+defineProps&lt;{ label: <span class="kw">string</span>; disabled?: <span class="kw">boolean</span>; onClick: () =&gt; <span class="kw">void</span> }&gt;();
+
+<span class="cmt">// IconButton.vue — extends BaseButton, substitutable everywhere</span>
+defineProps&lt;{ label: <span class="kw">string</span>; disabled?: <span class="kw">boolean</span>; onClick: () =&gt; <span class="kw">void</span>; icon: <span class="kw">string</span> }&gt;();
+
+<span class="cmt">// Parent can swap BaseButton → IconButton without breaking</span>
+&lt;BaseButton v-bind=<span class="str">"buttonProps"</span> /&gt;
+&lt;IconButton v-bind=<span class="str">"buttonProps"</span> icon=<span class="str">"star"</span> /&gt;  <span class="cmt">// ✓ Works!</span>
+
+<span class="cmt">// Consistent emit interfaces across related components</span>
+<span class="cmt">// All list components emit: select(item), remove(item)</span>
+<span class="cmt">// AssetsList, CurrenciesList, TokenList — all substitutable</span></pre>
+</div>
+
+</div></div>
+
+<!-- ISP -->
+<div class="concept" id="isp">
+<div class="concept-header" onclick="this.parentElement.classList.toggle('open')">
+  <h3>ISP — Interface Segregation Principle</h3>
+  <div><span class="badge badge-principle">SOLID</span> <span class="chevron">▼</span></div>
+</div>
+<div class="concept-body">
+<div class="one-liner">No client should be forced to depend on methods it doesn't use.</div>
+<div class="section-label">Bad Approach</div>
+<div class="bad-box">
+<pre><span class="kw">interface</span> Worker {
+  code(): void;
+  design(): void;
+  test(): void;
+  managePeople(): void;
+}
+<span class="cmt">// Junior dev must implement managePeople()? Throws NotImplemented?</span></pre>
+</div>
+<div class="section-label">Good Approach</div>
+<div class="good-box">
+<pre><span class="kw">interface</span> Coder { code(): void; }
+<span class="kw">interface</span> Designer { design(): void; }
+<span class="kw">interface</span> Manager { managePeople(): void; }
+
+<span class="kw">class</span> FullStackDev <span class="kw">implements</span> Coder, Designer { ... }
+<span class="kw">class</span> TeamLead <span class="kw">implements</span> Coder, Manager { ... }</pre>
+</div>
+<div class="sw-grid">
+  <div><div class="section-label">Strengths</div><ul class="strengths"><li>Clients only see what they need</li><li>Less coupling, easier refactoring</li></ul></div>
+  <div><div class="section-label">Weaknesses</div><ul class="weaknesses"><li>Many small interfaces to manage</li><li>Can fragment cohesive concepts</li></ul></div>
+</div>
+<div class="section-label">Real-World</div>
+<div class="real-world"><strong>Java's Readable/Writable/Closeable</strong> — a read-only stream doesn't need write methods.</div>
+<div class="section-label">Vue 3 / TS Example</div>
+<div class="vue-box">
+<div class="vue-label">Vue 3 / TS</div>
+<pre><span class="cmt">// BAD — one huge composable forces consumers to depend on everything</span>
+<span class="kw">function</span> <span class="fn">useAuthAll</span>() {
+  <span class="kw">const</span> user = ref&lt;<span class="kw">string</span> | <span class="kw">null</span>&gt;(<span class="kw">null</span>);
+  <span class="kw">const</span> roles = ref&lt;<span class="kw">string</span>[]&gt;([]);
+  <span class="kw">const</span> login = () =&gt; { <span class="cmt">/* ... */</span> };
+  <span class="kw">const</span> logout = () =&gt; { <span class="cmt">/* ... */</span> };
+  <span class="kw">const</span> adminPanel = ref(<span class="kw">false</span>);
+  <span class="kw">const</span> auditLog = ref&lt;<span class="kw">string</span>[]&gt;([]);
+  <span class="kw">return</span> { login, logout, user, roles, adminPanel, auditLog };
+}
+
+<span class="cmt">// GOOD — split into focused composables</span>
+<span class="kw">function</span> <span class="fn">useAuth</span>() {
+  <span class="kw">const</span> user = ref&lt;<span class="kw">string</span> | <span class="kw">null</span>&gt;(<span class="kw">null</span>);
+  <span class="kw">const</span> login = () =&gt; { <span class="cmt">/* ... */</span> };
+  <span class="kw">const</span> logout = () =&gt; { <span class="cmt">/* ... */</span> };
+  <span class="kw">return</span> { login, logout, user };
+}
+<span class="kw">function</span> <span class="fn">useAuthAdmin</span>() {
+  <span class="kw">const</span> roles = ref&lt;<span class="kw">string</span>[]&gt;([]);
+  <span class="kw">const</span> adminPanel = ref(<span class="kw">false</span>);
+  <span class="kw">return</span> { roles, adminPanel };
+}
+
+<span class="cmt">// TypeScript: Pick only what you need</span>
+<span class="kw">interface</span> User { id: <span class="kw">string</span>; name: <span class="kw">string</span>; avatar: <span class="kw">string</span>; email: <span class="kw">string</span>; }
+<span class="kw">type</span> UserCardProps = Pick&lt;User, <span class="str">'name'</span> | <span class="str">'avatar'</span>&gt;;
+<span class="cmt">// Instead of passing the entire User object to a display card</span></pre>
+</div>
+
+</div></div>
+
+<!-- DIP -->
+<div class="concept" id="dip">
+<div class="concept-header" onclick="this.parentElement.classList.toggle('open')">
+  <h3>DIP — Dependency Inversion Principle</h3>
+  <div><span class="badge badge-principle">SOLID</span> <span class="chevron">▼</span></div>
+</div>
+<div class="concept-body">
+<div class="one-liner">High-level modules depend on abstractions, not concrete implementations.</div>
+<div class="section-label">Bad Approach</div>
+<div class="bad-box">
+<pre><span class="kw">class</span> OrderService {
+  <span class="kw">private</span> repo = <span class="kw">new</span> MySQLOrderRepo(); <span class="cmt">// High-level depends on low-level</span>
+}
+<span class="cmt">// Switching to MongoDB? Rewrite OrderService.</span></pre>
+</div>
+<div class="section-label">Good Approach</div>
+<div class="good-box">
+<pre><span class="kw">interface</span> OrderRepository { save(o: Order): void; }
+
+<span class="kw">class</span> OrderService {
+  <span class="kw">constructor</span>(<span class="kw">private</span> repo: OrderRepository) {}
+}
+<span class="cmt">// Both high-level and low-level depend on the abstraction</span></pre>
+</div>
+<div class="section-label">Real-World</div>
+<div class="real-world"><strong>Clean Architecture layers</strong> — domain layer defines interfaces, infrastructure layer implements them. Domain never imports infrastructure.</div>
+<div class="section-label">Vue 3 / TS Example</div>
+<div class="vue-box">
+<div class="vue-label">Vue 3 / TS</div>
+<pre><span class="cmt">// Define interface (abstraction)</span>
+<span class="kw">interface</span> PaymentGateway {
+  charge(amount: <span class="kw">string</span>): Promise&lt;Receipt&gt;;
+}
+
+<span class="cmt">// InjectionKey typed to interface, not implementation</span>
+<span class="kw">const</span> PaymentKey: InjectionKey&lt;PaymentGateway&gt; = Symbol(<span class="str">'payment'</span>);
+
+<span class="cmt">// High-level composable depends on abstraction</span>
+<span class="kw">function</span> <span class="fn">useCheckout</span>() {
+  <span class="kw">const</span> gateway = inject(PaymentKey)!; <span class="cmt">// interface, not StripeService</span>
+  <span class="kw">const</span> pay = (amount: <span class="kw">string</span>) =&gt; gateway.charge(amount);
+  <span class="kw">return</span> { pay };
+}
+
+<span class="cmt">// In app setup — provide concrete implementation</span>
+provide(PaymentKey, <span class="kw">new</span> StripeGateway());
+<span class="cmt">// In tests — provide mock</span>
+provide(PaymentKey, mockGateway);</pre>
+</div>
+
+</div></div>
+
+</section>
+
+<!-- ==================== GRASP ==================== -->
+<section class="category" id="cat-grasp">
+<h2>GRASP Patterns</h2>
+
+<div class="concept" id="grasp">
+<div class="concept-header" onclick="this.parentElement.classList.toggle('open')">
+  <h3>GRASP — General Responsibility Assignment</h3>
+  <div><span class="badge badge-principle">Principle</span> <span class="chevron">▼</span></div>
+</div>
+<div class="concept-body">
+<div class="one-liner">Nine principles for deciding which class gets which responsibility.</div>
+<div class="section-label">The 9 Patterns</div>
+<div class="problem-box" style="border-left-color: var(--accent);">
+<strong>1. Information Expert</strong> — Assign responsibility to the class with the most info needed to fulfill it.<br>
+<strong>2. Creator</strong> — B creates A if B contains/aggregates A, closely uses A, or has init data for A.<br>
+<strong>3. Controller</strong> — A non-UI object handles system events (use-case controller or facade controller).<br>
+<strong>4. Low Coupling</strong> — Minimize dependencies between classes for resilience to change.<br>
+<strong>5. High Cohesion</strong> — Keep related responsibilities together; a class does one focused thing well.<br>
+<strong>6. Polymorphism</strong> — Use polymorphic methods instead of conditionals on type.<br>
+<strong>7. Pure Fabrication</strong> — Invent a class that doesn't represent a domain concept to achieve low coupling/high cohesion.<br>
+<strong>8. Indirection</strong> — Assign responsibility to an intermediate object to decouple two components.<br>
+<strong>9. Protected Variations</strong> — Wrap instability behind a stable interface.
+</div>
+<div class="section-label">Example: Information Expert</div>
+<div class="bad-box">
+<pre><span class="cmt">// BAD: External code calculates order total</span>
+<span class="kw">function</span> <span class="fn">calcTotal</span>(order) {
+  <span class="kw">return</span> order.items.reduce((sum, i) => sum + i.price * i.qty, 0);
+}</pre>
+</div>
+<div class="good-box">
+<pre><span class="cmt">// GOOD: Order has the info, so Order calculates it</span>
+<span class="kw">class</span> Order {
+  <span class="fn">getTotal</span>() {
+    <span class="kw">return this</span>.items.reduce((sum, i) => sum + i.price * i.qty, 0);
+  }
+}</pre>
+</div>
+<div class="section-label">Real-World</div>
+<div class="real-world"><strong>Pure Fabrication example:</strong> <code>OrderRepository</code> is not a domain concept but is fabricated to separate persistence from domain logic, achieving low coupling.</div>
+<div class="section-label">Vue 3 / TS Example</div>
+<div class="vue-box">
+<div class="vue-label">Vue 3 / TS</div>
+<pre><span class="cmt">// Information Expert — component with data computes derived state</span>
+<span class="cmt">// WalletView.vue has assets → it computes total balance</span>
+<span class="kw">const</span> totalBalance = computed(() =&gt;
+  assets.value.reduce((sum, a) =&gt; Big(sum).plus(a.balanceUsd).toString(), <span class="str">'0'</span>)
+);
+
+<span class="cmt">// Creator — parent component creates child's data</span>
+<span class="cmt">// TransactionGroups.vue receives groups[] from parent that creates them</span>
+
+<span class="cmt">// Controller — Pinia store as the coordinator</span>
+<span class="kw">const</span> useWalletStore = defineStore(<span class="str">'wallet'</span>, () =&gt; {
+  <span class="kw">const</span> assets = ref([]);
+  <span class="kw">const</span> toggleVisibility = () =&gt; { <span class="cmt">/* coordinates UI + state */</span> };
+  <span class="kw">return</span> { assets, toggleVisibility };
+});
+
+<span class="cmt">// Low Coupling — composable doesn't import specific store</span>
+<span class="cmt">// High Cohesion — useSearch only handles search concerns</span></pre>
+</div>
+
+</div></div>
+
+</section>
+
+<!-- ==================== GoF PATTERNS ==================== -->
+<section class="category" id="cat-gof">
+<h2>GoF Design Patterns</h2>
+
+<!-- Builder -->
+<div class="concept" id="builder">
+<div class="concept-header" onclick="this.parentElement.classList.toggle('open')">
+  <h3>Builder</h3>
+  <div><span class="badge badge-pattern">Creational</span> <span class="chevron">▼</span></div>
+</div>
+<div class="concept-body">
+<div class="one-liner">Construct complex objects step-by-step, separating construction from representation.</div>
+<div class="section-label">Bad Approach</div>
+<div class="bad-box">
+<pre><span class="cmt">// Constructor with 10 parameters — unreadable, error-prone</span>
+<span class="kw">const</span> query = <span class="kw">new</span> Query(<span class="str">"users"</span>, [<span class="str">"name"</span>], <span class="kw">null</span>, <span class="str">"age > 18"</span>,
+  <span class="kw">null</span>, <span class="str">"name"</span>, <span class="str">"ASC"</span>, 10, 0, <span class="kw">true</span>);</pre>
+</div>
+<div class="section-label">Good Approach</div>
+<div class="good-box">
+<pre><span class="kw">const</span> query = <span class="kw">new</span> QueryBuilder(<span class="str">"users"</span>)
+  .select(<span class="str">"name"</span>)
+  .where(<span class="str">"age > 18"</span>)
+  .orderBy(<span class="str">"name"</span>, <span class="str">"ASC"</span>)
+  .limit(10)
+  .build();</pre>
+</div>
+<div class="sw-grid">
+  <div><div class="section-label">Strengths</div><ul class="strengths"><li>Readable, self-documenting</li><li>Validates at build time</li><li>Immutable result objects</li></ul></div>
+  <div><div class="section-label">Weaknesses</div><ul class="weaknesses"><li>More code for simple objects</li><li>Duplicated field definitions</li></ul></div>
+</div>
+<div class="section-label">Real-World</div>
+<div class="real-world"><strong>SQL query builders</strong> (Knex, TypeORM QueryBuilder), <strong>HTTP request builders</strong>, <strong>StringBuilder</strong> in Java.</div>
+<div class="section-label">Vue 3 / TS Example</div>
+<div class="vue-box">
+<div class="vue-label">Vue 3 / TS</div>
+<pre><span class="cmt">// Fluent query params builder</span>
+<span class="kw">class</span> QueryBuilder {
+  <span class="kw">private</span> params = <span class="kw">new</span> URLSearchParams();
+  <span class="fn">page</span>(n: <span class="kw">number</span>) { <span class="kw">this</span>.params.set(<span class="str">'page'</span>, String(n)); <span class="kw">return this</span>; }
+  <span class="fn">limit</span>(n: <span class="kw">number</span>) { <span class="kw">this</span>.params.set(<span class="str">'limit'</span>, String(n)); <span class="kw">return this</span>; }
+  <span class="fn">filter</span>(k: <span class="kw">string</span>, v: <span class="kw">string</span>) { <span class="kw">this</span>.params.set(k, v); <span class="kw">return this</span>; }
+  <span class="fn">build</span>() { <span class="kw">return this</span>.params.toString(); }
+}
+
+<span class="kw">const</span> query = <span class="kw">new</span> QueryBuilder()
+  .page(1).limit(20).filter(<span class="str">'status'</span>, <span class="str">'active'</span>).build();
+
+<span class="cmt">// TanStack Query options builder pattern</span>
+<span class="kw">const</span> { data } = useQuery({
+  queryKey: [<span class="str">'walletAssets'</span>, currency],
+  queryFn: () =&gt; walletApi.getAssets(currency),
+  staleTime: 30_000,
+  retry: 3,
+});</pre>
+</div>
+
+</div></div>
+
+<!-- Adapter -->
+<div class="concept" id="adapter">
+<div class="concept-header" onclick="this.parentElement.classList.toggle('open')">
+  <h3>Adapter</h3>
+  <div><span class="badge badge-pattern">Structural</span> <span class="chevron">▼</span></div>
+</div>
+<div class="concept-body">
+<div class="one-liner">Convert one interface into another that clients expect — a plug converter for code.</div>
+<div class="section-label">Bad Approach</div>
+<div class="bad-box">
+<pre><span class="cmt">// Client code has to deal with every payment provider's API</span>
+<span class="kw">if</span> (provider === <span class="str">"stripe"</span>) stripe.charges.create({amount});
+<span class="kw">else if</span> (provider === <span class="str">"paypal"</span>) paypal.payment.execute({total: amount});</pre>
+</div>
+<div class="section-label">Good Approach</div>
+<div class="good-box">
+<pre><span class="kw">interface</span> PaymentGateway { charge(amount: number): Receipt; }
+
+<span class="kw">class</span> StripeAdapter <span class="kw">implements</span> PaymentGateway {
+  charge(amount) { <span class="kw">return</span> stripe.charges.create({amount}); }
+}
+<span class="kw">class</span> PayPalAdapter <span class="kw">implements</span> PaymentGateway {
+  charge(amount) { <span class="kw">return</span> paypal.payment.execute({total: amount}); }
+}
+<span class="cmt">// Client just calls gateway.charge(100) — doesn't care which provider</span></pre>
+</div>
+<div class="section-label">Real-World</div>
+<div class="real-world"><strong>ORMs adapting to different databases</strong>, <strong>logging facades</strong> (SLF4J wrapping Log4j/Logback), <strong>API version migration layers</strong>.</div>
+<div class="section-label">Vue 3 / TS Example</div>
+<div class="vue-box">
+<div class="vue-label">Vue 3 / TS</div>
+<pre><span class="cmt">// API response adapter: snake_case → camelCase</span>
+<span class="kw">interface</span> ApiTransaction {
+  tx_id: <span class="kw">string</span>; created_at: <span class="kw">string</span>; amount_usd: <span class="kw">string</span>;
+}
+<span class="kw">interface</span> Transaction {
+  txId: <span class="kw">string</span>; createdAt: <span class="kw">string</span>; amountUsd: <span class="kw">string</span>;
+}
+
+<span class="kw">function</span> <span class="fn">adaptTransaction</span>(raw: ApiTransaction): Transaction {
+  <span class="kw">return</span> {
+    txId: raw.tx_id,
+    createdAt: raw.created_at,
+    amountUsd: raw.amount_usd,
+  };
+}
+
+<span class="cmt">// Third-party lib wrapper composable</span>
+<span class="cmt">// Wraps Telegram WebApp SDK into Vue-friendly reactive API</span>
+<span class="kw">function</span> <span class="fn">useTelegram</span>() {
+  <span class="kw">const</span> user = ref(window.Telegram?.WebApp?.initDataUnsafe?.user);
+  <span class="kw">const</span> close = () =&gt; window.Telegram?.WebApp?.close();
+  <span class="kw">return</span> { user, close };
+}</pre>
+</div>
+
+</div></div>
+
+<!-- Facade -->
+<div class="concept" id="facade">
+<div class="concept-header" onclick="this.parentElement.classList.toggle('open')">
+  <h3>Facade</h3>
+  <div><span class="badge badge-pattern">Structural</span> <span class="chevron">▼</span></div>
+</div>
+<div class="concept-body">
+<div class="one-liner">Provide a simplified interface to a complex subsystem.</div>
+<div class="section-label">Bad Approach</div>
+<div class="bad-box">
+<pre><span class="cmt">// Client must orchestrate 5 subsystems to place an order</span>
+inventory.reserve(items);
+<span class="kw">const</span> tax = taxService.calculate(items, address);
+<span class="kw">const</span> charge = payment.charge(total + tax);
+shipping.createLabel(address, items);
+notification.sendConfirmation(email, orderId);</pre>
+</div>
+<div class="section-label">Good Approach</div>
+<div class="good-box">
+<pre><span class="kw">class</span> OrderFacade {
+  <span class="fn">placeOrder</span>(items, address, email) {
+    inventory.reserve(items);
+    <span class="kw">const</span> tax = taxService.calculate(items, address);
+    payment.charge(total + tax);
+    shipping.createLabel(address, items);
+    notification.sendConfirmation(email);
+  }
+}
+<span class="cmt">// Client: orderFacade.placeOrder(items, addr, email);</span></pre>
+</div>
+<div class="section-label">Real-World</div>
+<div class="real-world"><strong>jQuery</strong> was a facade over inconsistent browser DOM APIs. <strong>AWS SDK high-level clients</strong> simplify multi-step S3 uploads.</div>
+<div class="section-label">Vue 3 / TS Example</div>
+<div class="vue-box">
+<div class="vue-label">Vue 3 / TS</div>
+<pre><span class="cmt">// Complex subsystem: 3 stores + API + router</span>
+<span class="cmt">// Facade composable hides all complexity</span>
+<span class="kw">function</span> <span class="fn">useCheckout</span>() {
+  <span class="kw">const</span> cart = useCartStore();
+  <span class="kw">const</span> wallet = useWalletStore();
+  <span class="kw">const</span> auth = useAuthStore();
+  <span class="kw">const</span> router = useRouter();
+
+  <span class="kw">const</span> checkout = <span class="kw">async</span> () =&gt; {
+    <span class="kw">if</span> (!auth.isLoggedIn) <span class="kw">return</span> router.push(<span class="str">'/login'</span>);
+    <span class="kw">await</span> walletApi.charge(cart.total);
+    wallet.refreshBalance();
+    cart.clear();
+    router.push(<span class="str">'/success'</span>);
+  };
+
+  <span class="kw">return</span> { checkout }; <span class="cmt">// Simple interface!</span>
+}
+
+<span class="cmt">// Component just calls: const { checkout } = useCheckout();</span></pre>
+</div>
+
+</div></div>
+
+<!-- Proxy -->
+<div class="concept" id="proxy">
+<div class="concept-header" onclick="this.parentElement.classList.toggle('open')">
+  <h3>Proxy</h3>
+  <div><span class="badge badge-pattern">Structural</span> <span class="chevron">▼</span></div>
+</div>
+<div class="concept-body">
+<div class="one-liner">A surrogate that controls access to the real object (lazy load, cache, auth).</div>
+<div class="section-label">Good Approach</div>
+<div class="good-box">
+<pre><span class="kw">class</span> CachingProxy {
+  <span class="kw">constructor</span>(<span class="kw">private</span> realService: DataService) {}
+  cache = <span class="kw">new</span> Map();
+
+  <span class="fn">getData</span>(key) {
+    <span class="kw">if</span> (!<span class="kw">this</span>.cache.has(key)) {
+      <span class="kw">this</span>.cache.set(key, <span class="kw">this</span>.realService.getData(key));
+    }
+    <span class="kw">return this</span>.cache.get(key);
+  }
+}
+<span class="cmt">// Same interface as realService — client doesn't know it's cached</span></pre>
+</div>
+<div class="sw-grid">
+  <div><div class="section-label">Strengths</div><ul class="strengths"><li>Transparent to clients</li><li>Lazy init, caching, access control</li></ul></div>
+  <div><div class="section-label">Weaknesses</div><ul class="weaknesses"><li>Adds indirection</li><li>Can mask performance issues</li></ul></div>
+</div>
+<div class="section-label">Real-World</div>
+<div class="real-world"><strong>ORM lazy loading</strong> (Hibernate proxies), <strong>JS Proxy object</strong>, <strong>reverse proxy (Nginx)</strong>, <strong>virtual DOM</strong>.</div>
+<div class="section-label">Vue 3 / TS Example</div>
+<div class="vue-box">
+<div class="vue-label">Vue 3 / TS</div>
+<pre><span class="cmt">// Vue 3 reactivity IS the Proxy pattern!</span>
+<span class="kw">const</span> state = reactive({ count: 0 });
+<span class="cmt">// Under the hood: new Proxy(target, {</span>
+<span class="cmt">//   get(target, key) { track(target, key); return target[key]; },</span>
+<span class="cmt">//   set(target, key, value) { target[key] = value; trigger(target, key); }</span>
+<span class="cmt">// })</span>
+
+<span class="cmt">// computed() is a caching proxy</span>
+<span class="kw">const</span> first = ref(<span class="str">'John'</span>);
+<span class="kw">const</span> last = ref(<span class="str">'Doe'</span>);
+<span class="kw">const</span> fullName = computed(() =&gt; `${first.value} ${last.value}`);
+<span class="cmt">// Only recomputes when dependencies change — lazy + cached</span>
+
+<span class="cmt">// watchEffect — lazy evaluation proxy</span>
+watchEffect(() =&gt; {
+  console.log(state.count); <span class="cmt">// Auto-tracks, re-runs on change</span>
+});</pre>
+</div>
+
+</div></div>
+
+<!-- Decorator -->
+<div class="concept" id="decorator">
+<div class="concept-header" onclick="this.parentElement.classList.toggle('open')">
+  <h3>Decorator</h3>
+  <div><span class="badge badge-pattern">Structural</span> <span class="chevron">▼</span></div>
+</div>
+<div class="concept-body">
+<div class="one-liner">Wrap an object to add behavior dynamically without subclassing.</div>
+<div class="section-label">Bad Approach</div>
+<div class="bad-box">
+<pre><span class="cmt">// Explosion of subclasses</span>
+<span class="kw">class</span> EncryptedCompressedLogger <span class="kw">extends</span> Logger { ... }
+<span class="kw">class</span> EncryptedLogger <span class="kw">extends</span> Logger { ... }
+<span class="kw">class</span> CompressedLogger <span class="kw">extends</span> Logger { ... }
+<span class="cmt">// N features → 2^N classes!</span></pre>
+</div>
+<div class="section-label">Good Approach</div>
+<div class="good-box">
+<pre><span class="kw">class</span> EncryptionDecorator {
+  <span class="kw">constructor</span>(<span class="kw">private</span> inner: DataSink) {}
+  write(data) { <span class="kw">this</span>.inner.write(encrypt(data)); }
+}
+<span class="kw">class</span> CompressionDecorator {
+  <span class="kw">constructor</span>(<span class="kw">private</span> inner: DataSink) {}
+  write(data) { <span class="kw">this</span>.inner.write(compress(data)); }
+}
+<span class="cmt">// Compose: new Encryption(new Compression(new FileWriter()))</span></pre>
+</div>
+<div class="section-label">Real-World</div>
+<div class="real-world"><strong>Java I/O Streams</strong>: <code>new BufferedReader(new InputStreamReader(new FileInputStream(f)))</code>. <strong>Express/Koa middleware</strong> chains.</div>
+<div class="section-label">Vue 3 / TS Example</div>
+<div class="vue-box">
+<div class="vue-label">Vue 3 / TS</div>
+<pre><span class="cmt">// Wrapping a composable to add logging</span>
+<span class="kw">function</span> <span class="fn">withLogging</span>&lt;T&gt;(composable: () =&gt; T, name: <span class="kw">string</span>): () =&gt; T {
+  <span class="kw">return</span> () =&gt; {
+    console.log(<span class="str">`[${name}] initialized`</span>);
+    <span class="kw">return</span> composable();
+  };
+}
+<span class="kw">function</span> <span class="fn">useWallet</span>() { <span class="kw">return</span> { balance: ref(<span class="str">'0'</span>) }; }
+<span class="kw">const</span> useWalletWithLogs = <span class="fn">withLogging</span>(useWallet, <span class="str">'Wallet'</span>);
+
+<span class="cmt">// Axios interceptors as decorators</span>
+<span class="kw">const</span> token = useCookies().get(<span class="str">'auth_token'</span>);
+api.interceptors.request.use(config =&gt; {
+  config.headers.Authorization = <span class="str">`Bearer ${token}`</span>; <span class="cmt">// Decorate request</span>
+  <span class="kw">return</span> config;
+});
+api.interceptors.response.use(
+  res =&gt; res,
+  err =&gt; refreshOrInitializeToken().then(() =&gt; api(err.config)) <span class="cmt">// Decorate error handling</span>
+);</pre>
+</div>
+
+</div></div>
+
+<!-- Composite -->
+<div class="concept" id="composite">
+<div class="concept-header" onclick="this.parentElement.classList.toggle('open')">
+  <h3>Composite</h3>
+  <div><span class="badge badge-pattern">Structural</span> <span class="chevron">▼</span></div>
+</div>
+<div class="concept-body">
+<div class="one-liner">Treat individual objects and compositions uniformly via a tree structure.</div>
+<div class="section-label">Good Approach</div>
+<div class="good-box">
+<pre><span class="kw">interface</span> FileSystemNode { getSize(): number; }
+
+<span class="kw">class</span> File <span class="kw">implements</span> FileSystemNode {
+  getSize() { <span class="kw">return this</span>.bytes; }
+}
+<span class="kw">class</span> Directory <span class="kw">implements</span> FileSystemNode {
+  children: FileSystemNode[] = [];
+  getSize() { <span class="kw">return this</span>.children.reduce((s, c) => s + c.getSize(), 0); }
+}
+<span class="cmt">// directory.getSize() recursively sums all files — uniform interface</span></pre>
+</div>
+<div class="section-label">Real-World</div>
+<div class="real-world"><strong>DOM tree</strong>, <strong>React component tree</strong>, <strong>file systems</strong>, <strong>organization charts</strong>, <strong>UI layout containers</strong>.</div>
+<div class="section-label">Vue 3 / TS Example</div>
+<div class="vue-box">
+<div class="vue-label">Vue 3 / TS</div>
+<pre><span class="cmt">// Recursive component tree — nested menu</span>
+<span class="cmt">// MenuItem.vue</span>
+&lt;template&gt;
+  &lt;li&gt;
+    {{ item.label }}
+    &lt;ul v-if=<span class="str">"item.children?.length"</span>&gt;
+      &lt;MenuItem v-for=<span class="str">"child in item.children"</span>
+        :key=<span class="str">"child.id"</span> :item=<span class="str">"child"</span> /&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+&lt;/template&gt;
+
+<span class="cmt">// Slot composition — uniform interface for leaf &amp; composite</span>
+&lt;Card&gt;
+  &lt;CardHeader&gt;Title&lt;/CardHeader&gt;
+  &lt;CardBody&gt;
+    &lt;Card&gt;<span class="cmt">&lt;!-- Nested card, same interface --&gt;</span>&lt;/Card&gt;
+  &lt;/CardBody&gt;
+&lt;/Card&gt;</pre>
+</div>
+
+</div></div>
+
+<!-- Bridge -->
+<div class="concept" id="bridge">
+<div class="concept-header" onclick="this.parentElement.classList.toggle('open')">
+  <h3>Bridge</h3>
+  <div><span class="badge badge-pattern">Structural</span> <span class="chevron">▼</span></div>
+</div>
+<div class="concept-body">
+<div class="one-liner">Decouple abstraction from implementation so both can vary independently.</div>
+<div class="section-label">Bad Approach</div>
+<div class="bad-box">
+<pre><span class="cmt">// 2 shapes × 3 renderers = 6 classes</span>
+<span class="kw">class</span> CircleSVG, CircleCanvas, CircleWebGL
+<span class="kw">class</span> SquareSVG, SquareCanvas, SquareWebGL
+<span class="cmt">// Adding a new shape or renderer multiplies classes</span></pre>
+</div>
+<div class="section-label">Good Approach</div>
+<div class="good-box">
+<pre><span class="kw">interface</span> Renderer { drawCircle(x, y, r); drawRect(x, y, w, h); }
+<span class="kw">class</span> SVGRenderer <span class="kw">implements</span> Renderer { ... }
+<span class="kw">class</span> CanvasRenderer <span class="kw">implements</span> Renderer { ... }
+
+<span class="kw">class</span> Circle {
+  <span class="kw">constructor</span>(<span class="kw">private</span> renderer: Renderer) {}
+  draw() { <span class="kw">this</span>.renderer.drawCircle(<span class="kw">this</span>.x, <span class="kw">this</span>.y, <span class="kw">this</span>.r); }
+}
+<span class="cmt">// Shapes and renderers vary independently</span></pre>
+</div>
+<div class="section-label">Real-World</div>
+<div class="real-world"><strong>JDBC</strong> — Java's DB abstraction (bridge) works with any vendor's driver (implementation). <strong>Cross-platform UI toolkits</strong>.</div>
+<div class="section-label">Vue 3 / TS Example</div>
+<div class="vue-box">
+<div class="vue-label">Vue 3 / TS</div>
+<pre><span class="cmt">// Abstraction: composable for payment logic</span>
+<span class="cmt">// Implementation: swappable gateway</span>
+<span class="kw">interface</span> PaymentGateway {
+  charge(amount: <span class="kw">string</span>): Promise&lt;Result&gt;;
+}
+
+<span class="kw">function</span> <span class="fn">usePayment</span>(gateway: PaymentGateway) {
+  <span class="kw">const</span> loading = ref(<span class="kw">false</span>);
+  <span class="kw">const</span> pay = <span class="kw">async</span> (amount: <span class="kw">string</span>) =&gt; {
+    loading.value = <span class="kw">true</span>;
+    <span class="kw">const</span> result = <span class="kw">await</span> gateway.charge(amount);
+    loading.value = <span class="kw">false</span>;
+    <span class="kw">return</span> result;
+  };
+  <span class="kw">return</span> { loading, pay };
+}
+
+<span class="cmt">// Abstraction and implementation vary independently</span>
+<span class="kw">const</span> stripe = <span class="fn">usePayment</span>(<span class="kw">new</span> StripeGateway());
+<span class="kw">const</span> crypto = <span class="fn">usePayment</span>(<span class="kw">new</span> CryptoGateway());</pre>
+</div>
+
+</div></div>
+
+<!-- Strategy -->
+<div class="concept" id="strategy">
+<div class="concept-header" onclick="this.parentElement.classList.toggle('open')">
+  <h3>Strategy</h3>
+  <div><span class="badge badge-pattern">Behavioral</span> <span class="chevron">▼</span></div>
+</div>
+<div class="concept-body">
+<div class="one-liner">Define a family of algorithms, encapsulate each, and make them interchangeable at runtime.</div>
+<div class="section-label">Bad Approach</div>
+<div class="bad-box">
+<pre><span class="kw">function</span> <span class="fn">sort</span>(data, algorithm) {
+  <span class="kw">if</span> (algorithm === <span class="str">"quick"</span>) { <span class="cmt">/* 50 lines */</span> }
+  <span class="kw">else if</span> (algorithm === <span class="str">"merge"</span>) { <span class="cmt">/* 50 lines */</span> }
+  <span class="kw">else if</span> (algorithm === <span class="str">"heap"</span>) { <span class="cmt">/* 50 lines */</span> }
+}</pre>
+</div>
+<div class="section-label">Good Approach</div>
+<div class="good-box">
+<pre><span class="kw">interface</span> SortStrategy { sort(data: number[]): number[]; }
+
+<span class="kw">class</span> Sorter {
+  <span class="kw">constructor</span>(<span class="kw">private</span> strategy: SortStrategy) {}
+  sort(data) { <span class="kw">return this</span>.strategy.sort(data); }
+}
+<span class="cmt">// new Sorter(new QuickSort()).sort(data)</span>
+<span class="cmt">// new Sorter(new MergeSort()).sort(data)</span></pre>
+</div>
+<div class="section-label">Real-World</div>
+<div class="real-world"><strong>Passport.js</strong> authentication strategies, <strong>compression algorithms</strong> (gzip/brotli/zstd), <strong>pricing/discount rules</strong>.</div>
+<div class="section-label">Vue 3 / TS Example</div>
+<div class="vue-box">
+<div class="vue-label">Vue 3 / TS</div>
+<pre><span class="cmt">// Validation strategies passed to form composable</span>
+<span class="kw">type</span> Validator = (value: <span class="kw">string</span>) =&gt; <span class="kw">string</span> | <span class="kw">null</span>;
+
+<span class="kw">const</span> required: Validator = v =&gt; v ? <span class="kw">null</span> : <span class="str">'Required'</span>;
+<span class="kw">const</span> minLength = (n: <span class="kw">number</span>): Validator =&gt;
+  v =&gt; v.length &gt;= n ? <span class="kw">null</span> : <span class="str">`Min ${n} chars`</span>;
+
+<span class="kw">function</span> <span class="fn">useField</span>(validators: Validator[]) {
+  <span class="kw">const</span> value = ref(<span class="str">''</span>);
+  <span class="kw">const</span> error = computed(() =&gt;
+    validators.map(v =&gt; v(value.value)).find(Boolean) ?? <span class="kw">null</span>
+  );
+  <span class="kw">return</span> { value, error };
+}
+
+<span class="cmt">// Sort/filter strategies passed as props</span>
+&lt;AssetsList :sort-fn=<span class="str">"sortByBalance"</span> :filter-fn=<span class="str">"hideZero"</span> /&gt;
+
+<span class="cmt">// Router guards as navigation strategies</span>
+router.beforeEach(authGuard);  <span class="cmt">// Swap guard strategy</span></pre>
+</div>
+
+</div></div>
+
+<!-- Observer -->
+<div class="concept" id="observer">
+<div class="concept-header" onclick="this.parentElement.classList.toggle('open')">
+  <h3>Observer</h3>
+  <div><span class="badge badge-pattern">Behavioral</span> <span class="chevron">▼</span></div>
+</div>
+<div class="concept-body">
+<div class="one-liner">One-to-many notification: when subject changes state, all dependents are notified.</div>
+<div class="section-label">Bad Approach</div>
+<div class="bad-box">
+<pre><span class="kw">class</span> Store {
+  updatePrice(price) {
+    <span class="kw">this</span>.price = price;
+    <span class="kw">this</span>.dashboard.refresh();    <span class="cmt">// Tight coupling</span>
+    <span class="kw">this</span>.mobileApp.push();       <span class="cmt">// Knows about all consumers</span>
+    <span class="kw">this</span>.analytics.track();      <span class="cmt">// Adding new = edit Store</span>
+  }
+}</pre>
+</div>
+<div class="section-label">Good Approach</div>
+<div class="good-box">
+<pre><span class="kw">class</span> EventEmitter {
+  listeners = <span class="kw">new</span> Map();
+  on(event, fn) { <span class="cmt">/* subscribe */</span> }
+  emit(event, data) { <span class="cmt">/* notify all */</span> }
+}
+<span class="kw">class</span> Store <span class="kw">extends</span> EventEmitter {
+  updatePrice(price) {
+    <span class="kw">this</span>.price = price;
+    <span class="kw">this</span>.emit(<span class="str">"priceChanged"</span>, price); <span class="cmt">// Doesn't know who listens</span>
+  }
+}</pre>
+</div>
+<div class="section-label">Real-World</div>
+<div class="real-world"><strong>DOM events</strong>, <strong>Vue reactivity</strong> (watchers), <strong>RxJS Observables</strong>, <strong>Node EventEmitter</strong>, <strong>Redux subscriptions</strong>.</div>
+<div class="section-label">Vue 3 / TS Example</div>
+<div class="vue-box">
+<div class="vue-label">Vue 3 / TS</div>
+<pre><span class="cmt">// watch — explicit observer</span>
+watch(walletBalance, (newVal, oldVal) =&gt; {
+  <span class="kw">if</span> (Big(newVal).lt(oldVal)) notify(<span class="str">'Balance decreased!'</span>);
+});
+
+<span class="cmt">// watchEffect — auto-tracking observer</span>
+watchEffect(() =&gt; {
+  document.title = <span class="str">`Balance: ${balance.value}`</span>;
+});
+
+<span class="cmt">// Pinia $subscribe — store observer</span>
+walletStore.$subscribe((mutation, state) =&gt; {
+  localStorage.setItem(<span class="str">'wallet'</span>, JSON.stringify(state));
+});
+
+<span class="cmt">// Custom event bus (mitt)</span>
+<span class="kw">import</span> mitt <span class="kw">from</span> <span class="str">'mitt'</span>;
+<span class="kw">const</span> bus = mitt();
+bus.on(<span class="str">'tx:confirmed'</span>, refreshBalance); <span class="cmt">// Subscribe</span>
+bus.emit(<span class="str">'tx:confirmed'</span>, { txId });     <span class="cmt">// Publish</span></pre>
+</div>
+
+</div></div>
+
+<!-- Mediator -->
+<div class="concept" id="mediator">
+<div class="concept-header" onclick="this.parentElement.classList.toggle('open')">
+  <h3>Mediator</h3>
+  <div><span class="badge badge-pattern">Behavioral</span> <span class="chevron">▼</span></div>
+</div>
+<div class="concept-body">
+<div class="one-liner">Centralize complex communications between objects through a single coordinator.</div>
+<div class="section-label">Bad Approach</div>
+<div class="bad-box">
+<pre><span class="cmt">// Every UI component talks to every other — n² connections</span>
+searchBox.onChange → filterPanel.update() + resultList.refresh() + pagination.reset()
+filterPanel.onChange → searchBox.update() + resultList.refresh() + pagination.reset()</pre>
+</div>
+<div class="section-label">Good Approach</div>
+<div class="good-box">
+<pre><span class="kw">class</span> SearchMediator {
+  <span class="fn">notify</span>(sender, event) {
+    <span class="kw">if</span> (event === <span class="str">"search"</span>) {
+      <span class="kw">this</span>.filter.reset();
+      <span class="kw">this</span>.results.refresh();
+      <span class="kw">this</span>.pagination.reset();
+    }
+  }
+}
+<span class="cmt">// Components only know the mediator, not each other</span></pre>
+</div>
+<div class="section-label">Real-World</div>
+<div class="real-world"><strong>Air traffic control</strong> (planes communicate via tower), <strong>chat rooms</strong>, <strong>Redux store</strong> as mediator between components.</div>
+<div class="section-label">Vue 3 / TS Example</div>
+<div class="vue-box">
+<div class="vue-label">Vue 3 / TS</div>
+<pre><span class="cmt">// Pinia store as mediator between components</span>
+<span class="kw">const</span> useTransferStore = defineStore(<span class="str">'transfer'</span>, () =&gt; {
+  <span class="kw">const</span> amount = ref(<span class="str">''</span>);
+  <span class="kw">const</span> recipient = ref(<span class="str">''</span>);
+  <span class="kw">const</span> status = ref&lt;<span class="str">'idle'</span> | <span class="str">'pending'</span> | <span class="str">'done'</span>&gt;(<span class="str">'idle'</span>);
+
+  <span class="cmt">// Mediates between AmountInput, RecipientPicker, ConfirmButton</span>
+  <span class="kw">const</span> canConfirm = computed(() =&gt;
+    amount.value &amp;&amp; recipient.value &amp;&amp; status.value === <span class="str">'idle'</span>
+  );
+  <span class="kw">return</span> { amount, recipient, status, canConfirm };
+});
+
+<span class="cmt">// Parent component coordinating children via props/emits</span>
+<span class="cmt">// Parent receives @select from CurrencyPicker</span>
+<span class="cmt">// Parent passes :currency to AmountInput</span>
+<span class="cmt">// Children never talk to each other directly</span></pre>
+</div>
+
+</div></div>
+
+<!-- Iterator -->
+<div class="concept" id="iterator">
+<div class="concept-header" onclick="this.parentElement.classList.toggle('open')">
+  <h3>Iterator</h3>
+  <div><span class="badge badge-pattern">Behavioral</span> <span class="chevron">▼</span></div>
+</div>
+<div class="concept-body">
+<div class="one-liner">Access elements of a collection sequentially without exposing its internal structure.</div>
+<div class="section-label">Good Approach</div>
+<div class="good-box">
+<pre><span class="cmt">// JS iterators/generators — works with any data structure</span>
+<span class="kw">function*</span> <span class="fn">range</span>(start, end) {
+  <span class="kw">for</span> (<span class="kw">let</span> i = start; i &lt; end; i++) <span class="kw">yield</span> i;
+}
+<span class="kw">for</span> (<span class="kw">const</span> n <span class="kw">of</span> range(0, 1000000)) {
+  <span class="cmt">// Lazy — doesn't allocate 1M items in memory</span>
+  <span class="kw">if</span> (n > 10) <span class="kw">break</span>;
+}</pre>
+</div>
+<div class="section-label">Real-World</div>
+<div class="real-world"><strong>Database cursors</strong>, <strong>file line-by-line readers</strong>, <strong>paginated API results</strong>, <strong>for...of in JS</strong>, <strong>Python generators</strong>.</div>
+<div class="section-label">Vue 3 / TS Example</div>
+<div class="vue-box">
+<div class="vue-label">Vue 3 / TS</div>
+<pre><span class="cmt">// v-for with generator for paginated data</span>
+<span class="kw">async function*</span> <span class="fn">fetchPages</span>(url: <span class="kw">string</span>) {
+  <span class="kw">let</span> page = 1;
+  <span class="kw">while</span> (<span class="kw">true</span>) {
+    <span class="kw">const</span> res = <span class="kw">await</span> axios.get(url, { params: { page } });
+    <span class="kw">if</span> (!res.data.length) <span class="kw">break</span>;
+    <span class="kw">yield</span> res.data;
+    page++;
+  }
+}
+
+<span class="cmt">// Async iterator for infinite scroll composable</span>
+<span class="kw">function</span> <span class="fn">useInfiniteScroll</span>(fetcher: AsyncGenerator) {
+  <span class="kw">const</span> items = ref([]);
+  <span class="kw">const</span> loadMore = <span class="kw">async</span> () =&gt; {
+    <span class="kw">const</span> { value, done } = <span class="kw">await</span> fetcher.next();
+    <span class="kw">if</span> (!done) items.value.push(...value);
+  };
+  <span class="kw">return</span> { items, loadMore };
+}</pre>
+</div>
+
+</div></div>
+
+<!-- Visitor -->
+<div class="concept" id="visitor">
+<div class="concept-header" onclick="this.parentElement.classList.toggle('open')">
+  <h3>Visitor</h3>
+  <div><span class="badge badge-pattern">Behavioral</span> <span class="chevron">▼</span></div>
+</div>
+<div class="concept-body">
+<div class="one-liner">Add new operations to existing object structures without modifying them.</div>
+<div class="section-label">Good Approach</div>
+<div class="good-box">
+<pre><span class="kw">interface</span> ASTVisitor {
+  visitLiteral(node: Literal): any;
+  visitBinary(node: Binary): any;
+  visitUnary(node: Unary): any;
+}
+
+<span class="kw">class</span> Interpreter <span class="kw">implements</span> ASTVisitor {
+  visitLiteral(n) { <span class="kw">return</span> n.value; }
+  visitBinary(n) { <span class="kw">return</span> <span class="kw">this</span>.visit(n.left) + <span class="kw">this</span>.visit(n.right); }
+}
+<span class="kw">class</span> PrettyPrinter <span class="kw">implements</span> ASTVisitor {
+  visitLiteral(n) { <span class="kw">return</span> String(n.value); }
+  visitBinary(n) { <span class="kw">return</span> <span class="str">`(${this.visit(n.left)} + ${this.visit(n.right)})`</span>; }
+}
+<span class="cmt">// New operation = new visitor class. AST nodes unchanged.</span></pre>
+</div>
+<div class="section-label">Real-World</div>
+<div class="real-world"><strong>Compilers &amp; AST walkers</strong> (Babel, ESLint rules), <strong>document exporters</strong> (same doc → PDF, HTML, Markdown).</div>
+<div class="section-label">Vue 3 / TS Example</div>
+<div class="vue-box">
+<div class="vue-label">Vue 3 / TS</div>
+<pre><span class="cmt">// Schema-driven form renderer — visitor walks the schema</span>
+<span class="kw">type</span> Field = { type: <span class="str">'text'</span> | <span class="str">'select'</span> | <span class="str">'group'</span>; fields?: Field[] };
+
+<span class="kw">function</span> <span class="fn">renderField</span>(field: Field): VNode {
+  <span class="kw">switch</span> (field.type) {
+    <span class="kw">case</span> <span class="str">'text'</span>: <span class="kw">return</span> h(TextInput, field);
+    <span class="kw">case</span> <span class="str">'select'</span>: <span class="kw">return</span> h(SelectInput, field);
+    <span class="kw">case</span> <span class="str">'group'</span>: <span class="kw">return</span> h(<span class="str">'div'</span>, field.fields!.map(renderField));
+  }
+}
+
+<span class="cmt">// Vite plugin — AST visitor transforms code at build time</span>
+<span class="cmt">// ESLint rules visit AST nodes to enforce patterns</span>
+<span class="cmt">// Recursive slot rendering visits component tree</span></pre>
+</div>
+
+</div></div>
+
+</section>
+
+<!-- ==================== ARCHITECTURE ==================== -->
+<section class="category" id="cat-arch">
+<h2>Architecture Patterns</h2>
+
+<!-- DDD -->
+<div class="concept" id="ddd">
+<div class="concept-header" onclick="this.parentElement.classList.toggle('open')">
+  <h3>Domain-Driven Design (DDD)</h3>
+  <div><span class="badge badge-architecture">Architecture</span> <span class="chevron">▼</span></div>
+</div>
+<div class="concept-body">
+<div class="one-liner">Model software around the business domain using ubiquitous language and bounded contexts.</div>
+<div class="section-label">Key Concepts</div>
+<div class="problem-box" style="border-left-color: var(--purple)">
+<strong>Ubiquitous Language</strong> — developers and domain experts use the same terms in code and conversation.<br>
+<strong>Bounded Context</strong> — explicit boundary within which a model applies. "Account" means different things in Banking vs. Auth contexts.<br>
+<strong>Entities</strong> — objects with identity (User, Order).<br>
+<strong>Value Objects</strong> — immutable, no identity (Money, Address).<br>
+<strong>Aggregates</strong> — cluster of entities with a root that ensures consistency.<br>
+<strong>Domain Events</strong> — something meaningful that happened (OrderPlaced, PaymentReceived).<br>
+<strong>Repositories</strong> — persist/retrieve aggregates.
+</div>
+<div class="section-label">Bad Approach</div>
+<div class="bad-box">
+<pre><span class="cmt">// Anemic domain model — logic scattered in services</span>
+<span class="kw">class</span> Order { id; status; items; total; } <span class="cmt">// Just data</span>
+<span class="kw">class</span> OrderService {
+  cancel(order) { order.status = <span class="str">"cancelled"</span>; refund(order); }
+  <span class="cmt">// Business rules live outside the domain object</span>
+}</pre>
+</div>
+<div class="section-label">Good Approach</div>
+<div class="good-box">
+<pre><span class="kw">class</span> Order {
+  <span class="fn">cancel</span>() {
+    <span class="kw">if</span> (<span class="kw">this</span>.status === <span class="str">"shipped"</span>) <span class="kw">throw new</span> Error(<span class="str">"Cannot cancel shipped order"</span>);
+    <span class="kw">this</span>.status = OrderStatus.Cancelled;
+    <span class="kw">this</span>.addDomainEvent(<span class="kw">new</span> OrderCancelled(<span class="kw">this</span>.id));
+  }
+}
+<span class="cmt">// Domain object owns its rules and emits events</span></pre>
+</div>
+<div class="section-label">Real-World</div>
+<div class="real-world"><strong>E-commerce platforms</strong> — separate bounded contexts for Catalog, Orders, Shipping, Payments, each with their own models and teams.</div>
+<div class="section-label">Vue 3 / TS Example</div>
+<div class="vue-box">
+<div class="vue-label">Vue 3 / TS</div>
+<pre><span class="cmt">// Module-per-domain structure (this project!)</span>
+modules/
+  wallet/      <span class="cmt">// Bounded context: balances, assets, transactions</span>
+    api/       <span class="cmt">// walletApi.ts</span>
+    store/     <span class="cmt">// useWalletStore.ts</span>
+    views/     <span class="cmt">// WalletView.vue</span>
+    components/<span class="cmt">// WalletAssetsList.vue</span>
+  cards/       <span class="cmt">// Bounded context: card management</span>
+  borrow/      <span class="cmt">// Bounded context: loans</span>
+  lend/        <span class="cmt">// Bounded context: lending</span>
+
+<span class="cmt">// Branded types as Value Objects</span>
+<span class="kw">type</span> USD = <span class="kw">string</span> &amp; { __brand: <span class="str">'USD'</span> };
+<span class="kw">type</span> BTC = <span class="kw">string</span> &amp; { __brand: <span class="str">'BTC'</span> };
+<span class="cmt">// Can't accidentally pass BTC amount where USD expected</span>
+
+<span class="cmt">// Each module has its own types, API layer, store — no cross-imports</span></pre>
+</div>
+
+</div></div>
+
+<!-- Clean Architecture -->
+<div class="concept" id="clean-arch">
+<div class="concept-header" onclick="this.parentElement.classList.toggle('open')">
+  <h3>Clean Architecture</h3>
+  <div><span class="badge badge-architecture">Architecture</span> <span class="chevron">▼</span></div>
+</div>
+<div class="concept-body">
+<div class="one-liner">Dependencies point inward — business rules know nothing about frameworks or DB.</div>
+<div class="section-label">Layers (inside → out)</div>
+<div class="problem-box" style="border-left-color: var(--green)">
+<strong>1. Entities</strong> — enterprise-wide business rules (pure domain objects).<br>
+<strong>2. Use Cases</strong> — application-specific business rules (orchestrate entities).<br>
+<strong>3. Interface Adapters</strong> — controllers, presenters, gateways (convert data between layers).<br>
+<strong>4. Frameworks &amp; Drivers</strong> — DB, web framework, UI (outermost, most volatile).
+</div>
+<div class="section-label">Key Rule</div>
+<div class="good-box">
+<pre><span class="cmt">// Inner layers NEVER import from outer layers</span>
+<span class="cmt">// Use Case defines interface:</span>
+<span class="kw">interface</span> UserRepository { findById(id: string): User; }
+
+<span class="cmt">// Infrastructure implements it:</span>
+<span class="kw">class</span> PostgresUserRepo <span class="kw">implements</span> UserRepository { ... }
+
+<span class="cmt">// Use Case depends on abstraction, not Postgres</span>
+<span class="kw">class</span> GetUser {
+  <span class="kw">constructor</span>(<span class="kw">private</span> repo: UserRepository) {}
+  execute(id) { <span class="kw">return this</span>.repo.findById(id); }
+}</pre>
+</div>
+<div class="sw-grid">
+  <div><div class="section-label">Strengths</div><ul class="strengths"><li>Framework-independent</li><li>Highly testable</li><li>Business rules protected from change</li></ul></div>
+  <div><div class="section-label">Weaknesses</div><ul class="weaknesses"><li>Lots of interfaces &amp; mapping</li><li>Overkill for simple CRUD apps</li></ul></div>
+</div>
+</div></div>
+
+<!-- CQRS -->
+<div class="concept" id="cqrs">
+<div class="concept-header" onclick="this.parentElement.classList.toggle('open')">
+  <h3>CQRS</h3>
+  <div><span class="badge badge-architecture">Architecture</span> <span class="chevron">▼</span></div>
+</div>
+<div class="concept-body">
+<div class="one-liner">Separate read models from write models for independent scaling and optimization.</div>
+<div class="section-label">Bad Approach</div>
+<div class="bad-box">
+<pre><span class="cmt">// Same model for reads and writes</span>
+<span class="kw">class</span> ProductService {
+  create(p) { db.products.insert(p); }
+  getById(id) { <span class="kw">return</span> db.products.findById(id); }
+  search(q) { <span class="kw">return</span> db.products.find(q); } <span class="cmt">// Slow! Joins everywhere</span>
+}
+<span class="cmt">// Write-optimized schema conflicts with read-optimized queries</span></pre>
+</div>
+<div class="section-label">Good Approach</div>
+<div class="good-box">
+<pre><span class="cmt">// Write side — normalized, validates business rules</span>
+<span class="kw">class</span> CreateProductHandler {
+  handle(cmd) { writeDb.products.insert(cmd); eventBus.emit(<span class="str">"ProductCreated"</span>); }
+}
+
+<span class="cmt">// Read side — denormalized, optimized for queries</span>
+<span class="kw">class</span> ProductReadModel {
+  onProductCreated(e) { readDb.productViews.upsert(flatten(e)); }
+}
+<span class="kw">class</span> ProductQuery {
+  search(q) { <span class="kw">return</span> readDb.productViews.find(q); } <span class="cmt">// Fast! Pre-joined</span>
+}</pre>
+</div>
+<div class="sw-grid">
+  <div><div class="section-label">Strengths</div><ul class="strengths"><li>Independent scaling of reads/writes</li><li>Optimized query models</li><li>Simpler read logic</li></ul></div>
+  <div><div class="section-label">Weaknesses</div><ul class="weaknesses"><li>Eventual consistency between models</li><li>Increased complexity</li><li>Data sync infrastructure needed</li></ul></div>
+</div>
+<div class="section-label">Real-World</div>
+<div class="real-world"><strong>E-commerce search</strong> — writes go to PostgreSQL (normalized), reads go to Elasticsearch (denormalized). <strong>Twitter timeline</strong> — fan-out on write to pre-computed feeds.</div>
+<div class="section-label">Vue 3 / TS Example</div>
+<div class="vue-box">
+<div class="vue-label">Vue 3 / TS</div>
+<pre><span class="cmt">// Queries (read) — TanStack useQuery</span>
+<span class="kw">const</span> { data: assets } = useQuery({
+  queryKey: [<span class="str">'assets'</span>],
+  queryFn: walletApi.getAssets,  <span class="cmt">// Optimized read endpoint</span>
+});
+
+<span class="cmt">// Commands (write) — TanStack useMutation</span>
+<span class="kw">const</span> { mutate: sendFunds } = useMutation({
+  mutationFn: walletApi.transfer,  <span class="cmt">// Write endpoint</span>
+  onSuccess: () =&gt; {
+    queryClient.invalidateQueries({ queryKey: [<span class="str">'assets'</span>] }); <span class="cmt">// Sync read</span>
+  },
+});
+
+<span class="cmt">// Optimistic update — UI updates before server confirms</span>
+<span class="kw">const</span> { mutate } = useMutation({
+  mutationFn: walletApi.transfer,
+  onMutate: <span class="kw">async</span> (vars) =&gt; {
+    <span class="kw">await</span> queryClient.cancelQueries({ queryKey: [<span class="str">'assets'</span>] });
+    <span class="kw">const</span> prev = queryClient.getQueryData([<span class="str">'assets'</span>]);
+    queryClient.setQueryData([<span class="str">'assets'</span>], optimisticUpdate(prev, vars));
+    <span class="kw">return</span> { prev }; <span class="cmt">// For rollback</span>
+  },
+});</pre>
+</div>
+
+<div class="section-label">Vue 3 / TS Example</div>
+<div class="vue-box">
+<div class="vue-label">Vue 3 / TS</div>
+<pre><span class="cmt">// Layered module — dependencies point inward</span>
+<span class="cmt">// Layer 1: Domain types (innermost, no deps)</span>
+<span class="cmt">// src/modules/wallet/types.ts</span>
+<span class="kw">interface</span> Asset { symbol: <span class="kw">string</span>; balance: <span class="kw">string</span>; }
+
+<span class="cmt">// Layer 2: API / Infrastructure (depends on types)</span>
+<span class="cmt">// src/modules/wallet/api/walletApi.ts</span>
+<span class="kw">const</span> getAssets = (): Promise&lt;Asset[]&gt; =&gt; api.get(<span class="str">'/assets'</span>);
+
+<span class="cmt">// Layer 3: Services/Composables (depends on types + api)</span>
+<span class="cmt">// src/modules/wallet/composables/useWalletQueries.ts</span>
+<span class="kw">function</span> <span class="fn">useWalletAssets</span>() {
+  <span class="kw">return</span> useQuery({ queryKey: [<span class="str">'assets'</span>], queryFn: getAssets });
+}
+
+<span class="cmt">// Layer 4: Components/Views (outermost, depends on everything)</span>
+<span class="cmt">// src/modules/wallet/views/WalletView.vue</span>
+<span class="cmt">// Views never call API directly — always through composables</span></pre>
+</div>
+
+</div></div>
+
+<!-- Event Sourcing -->
+<div class="concept" id="event-sourcing">
+<div class="concept-header" onclick="this.parentElement.classList.toggle('open')">
+  <h3>Event Sourcing</h3>
+  <div><span class="badge badge-architecture">Architecture</span> <span class="chevron">▼</span></div>
+</div>
+<div class="concept-body">
+<div class="one-liner">Store state as a sequence of events, not current snapshot — full history, replay capability.</div>
+<div class="section-label">Bad Approach (CRUD)</div>
+<div class="bad-box">
+<pre><span class="cmt">// Only current state — history is lost</span>
+UPDATE accounts SET balance = 950 WHERE id = 1;
+<span class="cmt">// Why is it 950? When did it change? From what? 🤷</span></pre>
+</div>
+<div class="section-label">Good Approach</div>
+<div class="good-box">
+<pre><span class="cmt">// Store events — current state derived by replaying</span>
+events = [
+  { type: <span class="str">"AccountOpened"</span>, balance: 0 },
+  { type: <span class="str">"MoneyDeposited"</span>, amount: 1000 },
+  { type: <span class="str">"MoneyWithdrawn"</span>, amount: 50 },
+]
+<span class="cmt">// Current balance: replay → 0 + 1000 - 50 = 950</span>
+<span class="cmt">// Full audit trail, can rebuild state at any point in time</span></pre>
+</div>
+<div class="sw-grid">
+  <div><div class="section-label">Strengths</div><ul class="strengths"><li>Complete audit trail</li><li>Time-travel debugging</li><li>Rebuild state from events</li><li>Pairs with CQRS</li></ul></div>
+  <div><div class="section-label">Weaknesses</div><ul class="weaknesses"><li>Event schema evolution is hard</li><li>Replay can be slow</li><li>Snapshots needed for performance</li></ul></div>
+</div>
+<div class="section-label">Real-World</div>
+<div class="real-world"><strong>Banking ledgers</strong>, <strong>Git</strong> (commits are events), <strong>Redux</strong> (actions are events, state derived via reducers), <strong>Kafka event logs</strong>.</div>
+<div class="section-label">Vue 3 / TS Example</div>
+<div class="vue-box">
+<div class="vue-label">Vue 3 / TS</div>
+<pre><span class="cmt">// Undo/redo with event log</span>
+<span class="kw">type</span> Action = { type: <span class="str">'SET_AMOUNT'</span>; value: <span class="kw">string</span> }
+  | { type: <span class="str">'SET_RECIPIENT'</span>; value: <span class="kw">string</span> }
+  | { type: <span class="str">'RESET'</span> };
+
+<span class="kw">interface</span> FormState { amount: <span class="kw">string</span>; recipient: <span class="kw">string</span>; }
+<span class="kw">const</span> initialState: FormState = { amount: <span class="str">''</span>, recipient: <span class="str">''</span> };
+
+<span class="kw">function</span> <span class="fn">reducer</span>(state: FormState, action: Action): FormState {
+  <span class="kw">switch</span> (action.type) {
+    <span class="kw">case</span> <span class="str">'SET_AMOUNT'</span>: <span class="kw">return</span> { ...state, amount: action.value };
+    <span class="kw">case</span> <span class="str">'SET_RECIPIENT'</span>: <span class="kw">return</span> { ...state, recipient: action.value };
+    <span class="kw">case</span> <span class="str">'RESET'</span>: <span class="kw">return</span> initialState;
+  }
+}
+
+<span class="kw">const</span> history = ref&lt;Action[]&gt;([]);
+<span class="kw">const</span> pointer = ref(0);
+
+<span class="kw">function</span> <span class="fn">dispatch</span>(action: Action) {
+  history.value = [...history.value.slice(0, pointer.value), action];
+  pointer.value++;
+}
+<span class="kw">function</span> <span class="fn">undo</span>() { <span class="kw">if</span> (pointer.value &gt; 0) pointer.value--; }
+<span class="kw">function</span> <span class="fn">redo</span>() { <span class="kw">if</span> (pointer.value &lt; history.value.length) pointer.value++; }
+
+<span class="cmt">// Current state derived by replaying events</span>
+<span class="kw">const</span> state = computed(() =&gt;
+  history.value.slice(0, pointer.value).reduce(reducer, initialState)
+);</pre>
+</div>
+
+</div></div>
+
+</section>
+
+<!-- ==================== CONCURRENCY ==================== -->
+<section class="category" id="cat-concurrency">
+<h2>Concurrency &amp; Messaging</h2>
+
+<!-- Actor Model -->
+<div class="concept" id="actor">
+<div class="concept-header" onclick="this.parentElement.classList.toggle('open')">
+  <h3>Actor Model</h3>
+  <div><span class="badge badge-distributed">Concurrency</span> <span class="chevron">▼</span></div>
+</div>
+<div class="concept-body">
+<div class="one-liner">Concurrency via isolated actors that communicate only through async messages.</div>
+<div class="section-label">Bad Approach (Shared State)</div>
+<div class="bad-box">
+<pre><span class="cmt">// Shared mutable state + locks = deadlocks, race conditions</span>
+<span class="kw">let</span> balance = 1000;
+mutex.lock();
+balance -= amount; <span class="cmt">// Thread A</span>
+mutex.unlock();
+<span class="cmt">// Thread B waiting... deadlock risk with multiple locks</span></pre>
+</div>
+<div class="section-label">Good Approach</div>
+<div class="good-box">
+<pre><span class="cmt">// Each actor has private state, processes messages sequentially</span>
+<span class="kw">class</span> AccountActor {
+  balance = 1000;
+
+  receive(msg) {
+    <span class="kw">switch</span>(msg.type) {
+      <span class="kw">case</span> <span class="str">"withdraw"</span>:
+        <span class="kw">if</span> (<span class="kw">this</span>.balance >= msg.amount) {
+          <span class="kw">this</span>.balance -= msg.amount;
+          msg.replyTo.send({ type: <span class="str">"success"</span> });
+        }
+        <span class="kw">break</span>;
+    }
+  }
+}
+<span class="cmt">// No locks needed — messages processed one at a time</span></pre>
+</div>
+<div class="section-label">Real-World</div>
+<div class="real-world"><strong>Akka (JVM)</strong>, <strong>Erlang/OTP</strong> (WhatsApp, telecom switches), <strong>Microsoft Orleans</strong> (Halo game servers).</div>
+<div class="section-label">Vue 3 / TS Example</div>
+<div class="vue-box">
+<div class="vue-label">Vue 3 / TS</div>
+<pre><span class="cmt">// Web Worker as an actor — isolated, communicates via messages</span>
+<span class="cmt">// worker.ts</span>
+self.onmessage = (e: MessageEvent) =&gt; {
+  <span class="kw">const</span> result = heavyComputation(e.data);
+  self.postMessage(result); <span class="cmt">// Send message back</span>
+};
+
+<span class="cmt">// Component — communicates via async messages, no shared state</span>
+<span class="kw">const</span> worker = <span class="kw">new</span> Worker(<span class="str">'./worker.ts'</span>);
+worker.postMessage({ prices: rawPrices });
+worker.onmessage = (e) =&gt; { computedPrices.value = e.data; };
+
+<span class="cmt">// BroadcastChannel — cross-tab actor messaging</span>
+<span class="kw">const</span> channel = <span class="kw">new</span> BroadcastChannel(<span class="str">'wallet-sync'</span>);
+channel.postMessage({ type: <span class="str">'BALANCE_UPDATED'</span> });
+channel.onmessage = (e) =&gt; { <span class="cmt">/* other tabs react */</span> };</pre>
+</div>
+
+</div></div>
+
+<!-- Reactor -->
+<div class="concept" id="reactor">
+<div class="concept-header" onclick="this.parentElement.classList.toggle('open')">
+  <h3>Reactor Pattern</h3>
+  <div><span class="badge badge-distributed">Concurrency</span> <span class="chevron">▼</span></div>
+</div>
+<div class="concept-body">
+<div class="one-liner">Single-threaded event loop dispatching I/O events to handlers — non-blocking by design.</div>
+<div class="section-label">Bad Approach</div>
+<div class="bad-box">
+<pre><span class="cmt">// Thread-per-connection — 10K connections = 10K threads</span>
+<span class="kw">while</span> (<span class="kw">true</span>) {
+  socket = server.accept();       <span class="cmt">// Blocks</span>
+  <span class="kw">new</span> Thread(() => handle(socket)); <span class="cmt">// Expensive!</span>
+}
+<span class="cmt">// Memory: ~1MB per thread × 10K = 10GB just for stacks</span></pre>
+</div>
+<div class="section-label">Good Approach</div>
+<div class="good-box">
+<pre><span class="cmt">// Event loop + non-blocking I/O</span>
+<span class="kw">const</span> server = http.createServer((req, res) => {
+  <span class="cmt">// This handler is called by the event loop</span>
+  <span class="cmt">// when data is ready — no blocking, no threads</span>
+  db.query(sql).then(data => res.end(JSON.stringify(data)));
+});
+<span class="cmt">// Single thread handles 10K+ concurrent connections</span></pre>
+</div>
+<div class="section-label">Real-World</div>
+<div class="real-world"><strong>Node.js</strong> (libuv event loop), <strong>Nginx</strong>, <strong>Redis</strong> (single-threaded), <strong>Netty</strong> (Java), <strong>Tokio</strong> (Rust).</div>
+<div class="section-label">Vue 3 / TS Example</div>
+<div class="vue-box">
+<div class="vue-label">Vue 3 / TS</div>
+<pre><span class="cmt">// JavaScript event loop IS the reactor pattern!</span>
+<span class="cmt">// Single thread dispatches events to handlers</span>
+
+<span class="cmt">// nextTick — schedule after current microtask flush</span>
+state.value = <span class="str">'updated'</span>;
+nextTick(() =&gt; {
+  <span class="cmt">// DOM is now updated — reactor dispatched the update</span>
+  console.log(el.textContent); <span class="cmt">// reflects new state</span>
+});
+
+<span class="cmt">// Microtask queue ordering</span>
+Promise.resolve().then(() =&gt; console.log(<span class="str">'microtask 1'</span>));
+queueMicrotask(() =&gt; console.log(<span class="str">'microtask 2'</span>));
+setTimeout(() =&gt; console.log(<span class="str">'macrotask'</span>), 0);
+<span class="cmt">// Output: microtask 1, microtask 2, macrotask</span>
+
+<span class="cmt">// Vue batches DOM updates within the same event loop tick</span>
+<span class="cmt">// Multiple ref changes → single DOM update (reactor batching)</span></pre>
+</div>
+
+</div></div>
+
+<!-- Pub/Sub -->
+<div class="concept" id="pubsub">
+<div class="concept-header" onclick="this.parentElement.classList.toggle('open')">
+  <h3>Pub/Sub</h3>
+  <div><span class="badge badge-distributed">Messaging</span> <span class="chevron">▼</span></div>
+</div>
+<div class="concept-body">
+<div class="one-liner">Publishers emit events to topics; subscribers listen — full decoupling of producers and consumers.</div>
+<div class="section-label">Bad Approach</div>
+<div class="bad-box">
+<pre><span class="cmt">// Direct calls — order service knows all downstream services</span>
+orderService.placeOrder() {
+  inventoryService.reserve();   <span class="cmt">// HTTP call</span>
+  emailService.sendConfirm();   <span class="cmt">// HTTP call</span>
+  analyticsService.track();     <span class="cmt">// HTTP call</span>
+  <span class="cmt">// Adding a new consumer? Edit orderService.</span>
+}</pre>
+</div>
+<div class="section-label">Good Approach</div>
+<div class="good-box">
+<pre><span class="cmt">// Publisher doesn't know subscribers</span>
+orderService.placeOrder() {
+  messageBus.publish(<span class="str">"orders"</span>, { type: <span class="str">"OrderPlaced"</span>, data });
+}
+<span class="cmt">// Subscribers independently listen:</span>
+messageBus.subscribe(<span class="str">"orders"</span>, inventoryHandler);
+messageBus.subscribe(<span class="str">"orders"</span>, emailHandler);
+messageBus.subscribe(<span class="str">"orders"</span>, analyticsHandler);
+<span class="cmt">// New consumer? Just subscribe. No publisher change.</span></pre>
+</div>
+<div class="section-label">Real-World</div>
+<div class="real-world"><strong>Kafka topics</strong>, <strong>RabbitMQ exchanges</strong>, <strong>Redis Pub/Sub</strong>, <strong>Google Cloud Pub/Sub</strong>, <strong>AWS SNS/SQS</strong>.</div>
+<div class="section-label">Vue 3 / TS Example</div>
+<div class="vue-box">
+<div class="vue-label">Vue 3 / TS</div>
+<pre><span class="cmt">// Custom useEventBus composable</span>
+<span class="kw">import</span> mitt <span class="kw">from</span> <span class="str">'mitt'</span>;
+<span class="kw">type</span> Events = {
+  <span class="str">'tx:confirmed'</span>: { txId: <span class="kw">string</span> };
+  <span class="str">'balance:updated'</span>: <span class="kw">void</span>;
+};
+<span class="kw">const</span> emitter = mitt&lt;Events&gt;();
+
+<span class="kw">function</span> <span class="fn">useEventBus</span>() {
+  <span class="kw">const</span> subscriptions: Array&lt;() =&gt; <span class="kw">void</span>&gt; = [];
+  <span class="kw">const</span> on = &lt;K <span class="kw">extends</span> keyof Events&gt;(event: K, handler: (e: Events[K]) =&gt; <span class="kw">void</span>) =&gt; {
+    emitter.on(event, handler);
+    subscriptions.push(() =&gt; emitter.off(event, handler));
+  };
+  onUnmounted(() =&gt; subscriptions.forEach(unsub =&gt; unsub()));
+  <span class="kw">return</span> { on, emit: emitter.emit };
+}
+
+<span class="cmt">// Pinia $onAction — subscribe to store actions</span>
+walletStore.$onAction(({ name, after }) =&gt; {
+  after(() =&gt; console.log(<span class="str">`Action ${name} completed`</span>));
+});</pre>
+</div>
+
+</div></div>
+
+<!-- SAGA -->
+<div class="concept" id="saga">
+<div class="concept-header" onclick="this.parentElement.classList.toggle('open')">
+  <h3>SAGA Pattern</h3>
+  <div><span class="badge badge-distributed">Distributed</span> <span class="chevron">▼</span></div>
+</div>
+<div class="concept-body">
+<div class="one-liner">Manage distributed transactions via a sequence of local transactions with compensating actions.</div>
+<div class="section-label">Problem</div>
+<div class="problem-box">Distributed systems can't use traditional 2-phase commit (too slow, availability killer). How do you ensure consistency across services?</div>
+<div class="section-label">Good Approach</div>
+<div class="good-box">
+<pre><span class="cmt">// Saga: sequence of local transactions + compensations</span>
+<span class="cmt">// Book Trip Saga:</span>
+1. Reserve flight    → <span class="cmt">compensation: cancelFlight()</span>
+2. Reserve hotel     → <span class="cmt">compensation: cancelHotel()</span>
+3. Charge payment    → <span class="cmt">compensation: refund()</span>
+
+<span class="cmt">// If step 3 fails:</span>
+<span class="cmt">// → cancelHotel() → cancelFlight() (reverse order)</span>
+
+<span class="kw">class</span> BookTripSaga {
+  steps = [
+    { action: reserveFlight, compensate: cancelFlight },
+    { action: reserveHotel,  compensate: cancelHotel },
+    { action: chargePayment, compensate: refund },
+  ];
+  <span class="kw">async</span> execute() {
+    <span class="kw">const</span> completed = [];
+    <span class="kw">for</span> (<span class="kw">const</span> step <span class="kw">of this</span>.steps) {
+      <span class="kw">try</span> { <span class="kw">await</span> step.action(); completed.push(step); }
+      <span class="kw">catch</span> { <span class="kw">for</span> (<span class="kw">const</span> s <span class="kw">of</span> completed.reverse()) <span class="kw">await</span> s.compensate(); }
+    }
+  }
+}</pre>
+</div>
+<div class="sw-grid">
+  <div><div class="section-label">Strengths</div><ul class="strengths"><li>No distributed locks</li><li>Each service stays autonomous</li><li>Fault recovery built in</li></ul></div>
+  <div><div class="section-label">Weaknesses</div><ul class="weaknesses"><li>Compensations can fail too</li><li>Eventual consistency (not immediate)</li><li>Complex to debug</li></ul></div>
+</div>
+<div class="section-label">Real-World</div>
+<div class="real-world"><strong>E-commerce checkout</strong>, <strong>travel booking</strong> (flights + hotels + cars), <strong>banking transfers</strong> between institutions.</div>
+<div class="section-label">Vue 3 / TS Example</div>
+<div class="vue-box">
+<div class="vue-label">Vue 3 / TS</div>
+<pre><span class="cmt">// Multi-step form with rollback (compensation)</span>
+<span class="kw">async function</span> <span class="fn">submitLoanApplication</span>() {
+  <span class="kw">let</span> step = 0;
+  <span class="kw">try</span> {
+    <span class="kw">await</span> lendApi.lockCollateral(amount);   step = 1;
+    <span class="kw">await</span> lendApi.createLoan(params);        step = 2;
+    <span class="kw">await</span> lendApi.disburseFunds(recipient);  step = 3;
+  } <span class="kw">catch</span> (err) {
+    <span class="cmt">// Compensating actions (rollback in reverse)</span>
+    <span class="kw">if</span> (step &gt;= 2) <span class="kw">await</span> lendApi.cancelLoan(loanId);
+    <span class="kw">if</span> (step &gt;= 1) <span class="kw">await</span> lendApi.unlockCollateral(amount);
+    <span class="kw">throw</span> err;
+  }
+}
+
+<span class="cmt">// Vue Router navigation guards as saga steps</span>
+router.beforeEach(<span class="kw">async</span> (to) =&gt; {
+  <span class="kw">if</span> (to.meta.requiresAuth &amp;&amp; !isLoggedIn.value) <span class="kw">return</span> <span class="str">'/login'</span>;
+  <span class="kw">if</span> (to.meta.requiresKyc &amp;&amp; !isKycDone.value) <span class="kw">return</span> <span class="str">'/kyc'</span>;
+});</pre>
+</div>
+
+</div></div>
+
+</section>
+
+<!-- ==================== DATA PATTERNS ==================== -->
+<section class="category" id="cat-data">
+<h2>Data Patterns</h2>
+
+<!-- Repository -->
+<div class="concept" id="repository">
+<div class="concept-header" onclick="this.parentElement.classList.toggle('open')">
+  <h3>Repository Pattern</h3>
+  <div><span class="badge badge-data">Data</span> <span class="chevron">▼</span></div>
+</div>
+<div class="concept-body">
+<div class="one-liner">Mediate between domain and data mapping using a collection-like interface for aggregates.</div>
+<div class="section-label">Bad Approach</div>
+<div class="bad-box">
+<pre><span class="cmt">// SQL scattered across business logic</span>
+<span class="kw">class</span> OrderService {
+  getOrder(id) {
+    <span class="kw">const</span> row = db.query(<span class="str">`SELECT * FROM orders WHERE id = ${id}`</span>);
+    <span class="kw">const</span> items = db.query(<span class="str">`SELECT * FROM order_items WHERE order_id = ${id}`</span>);
+    <span class="cmt">// Manual mapping everywhere, SQL injection risk</span>
+  }
+}</pre>
+</div>
+<div class="section-label">Good Approach</div>
+<div class="good-box">
+<pre><span class="kw">interface</span> OrderRepository {
+  findById(id: string): Order;
+  save(order: Order): void;
+  findByCustomer(customerId: string): Order[];
+}
+
+<span class="kw">class</span> PostgresOrderRepo <span class="kw">implements</span> OrderRepository {
+  findById(id) { <span class="cmt">/* SQL lives here, returns domain object */</span> }
+}
+<span class="cmt">// Domain code: this.orderRepo.findById(id) — no SQL knowledge</span></pre>
+</div>
+<div class="section-label">Real-World</div>
+<div class="real-world"><strong>Every ORM</strong> (TypeORM repos, Django managers, Hibernate), <strong>Spring Data JPA</strong> repositories with auto-generated queries.</div>
+<div class="section-label">Vue 3 / TS Example</div>
+<div class="vue-box">
+<div class="vue-label">Vue 3 / TS</div>
+<pre><span class="cmt">// API service layer as repository — abstracts data source</span>
+<span class="cmt">// src/modules/wallet/api/walletApi.ts</span>
+<span class="kw">const</span> walletApi = {
+  getAssets: () =&gt; api.get&lt;Asset[]&gt;(<span class="str">'/wallet/assets'</span>),
+  getTransaction: (id: <span class="kw">string</span>) =&gt; api.get&lt;Tx&gt;(<span class="str">`/wallet/tx/${id}`</span>),
+  transfer: (data: TransferDto) =&gt; api.post(<span class="str">'/wallet/transfer'</span>, data),
+};
+
+<span class="cmt">// TanStack Query as caching repository</span>
+<span class="kw">function</span> <span class="fn">useAssets</span>() {
+  <span class="kw">return</span> useQuery({
+    queryKey: [<span class="str">'assets'</span>],
+    queryFn: walletApi.getAssets,
+    staleTime: 30_000,  <span class="cmt">// Cache for 30s</span>
+  });
+}
+<span class="cmt">// Components call useAssets() — don't know if data is</span>
+<span class="cmt">// from cache, network, or background refresh</span></pre>
+</div>
+
+</div></div>
+
+<!-- Unit of Work -->
+<div class="concept" id="uow">
+<div class="concept-header" onclick="this.parentElement.classList.toggle('open')">
+  <h3>Unit of Work</h3>
+  <div><span class="badge badge-data">Data</span> <span class="chevron">▼</span></div>
+</div>
+<div class="concept-body">
+<div class="one-liner">Track all changes during a business transaction and commit them atomically.</div>
+<div class="section-label">Bad Approach</div>
+<div class="bad-box">
+<pre><span class="cmt">// Each operation is its own DB call — partial failures possible</span>
+orderRepo.save(order);        <span class="cmt">// Succeeds</span>
+inventoryRepo.update(stock);  <span class="cmt">// Fails! Order saved but stock not updated</span>
+paymentRepo.save(payment);    <span class="cmt">// Never runs</span></pre>
+</div>
+<div class="section-label">Good Approach</div>
+<div class="good-box">
+<pre><span class="kw">class</span> UnitOfWork {
+  <span class="kw">private</span> dirty = [];  <span class="kw">private</span> new$ = [];  <span class="kw">private</span> removed = [];
+
+  markDirty(entity) { <span class="kw">this</span>.dirty.push(entity); }
+  markNew(entity) { <span class="kw">this</span>.new$.push(entity); }
+
+  <span class="kw">async</span> commit() {
+    <span class="kw">const</span> tx = <span class="kw">await</span> db.beginTransaction();
+    <span class="kw">try</span> {
+      <span class="kw">for</span> (<span class="kw">const</span> e <span class="kw">of this</span>.new$) <span class="kw">await</span> tx.insert(e);
+      <span class="kw">for</span> (<span class="kw">const</span> e <span class="kw">of this</span>.dirty) <span class="kw">await</span> tx.update(e);
+      <span class="kw">await</span> tx.commit();
+    } <span class="kw">catch</span> { <span class="kw">await</span> tx.rollback(); }
+  }
+}</pre>
+</div>
+<div class="section-label">Real-World</div>
+<div class="real-world"><strong>Entity Framework's DbContext</strong>, <strong>Hibernate Session</strong>, <strong>SQLAlchemy Session</strong> — all implement Unit of Work internally.</div>
+<div class="section-label">Vue 3 / TS Example</div>
+<div class="vue-box">
+<div class="vue-label">Vue 3 / TS</div>
+<pre><span class="cmt">// Batch API calls with Promise.all — all or nothing</span>
+<span class="kw">async function</span> <span class="fn">saveProfile</span>(changes: ProfileChanges) {
+  <span class="kw">await</span> Promise.all([
+    userApi.updateName(changes.name),
+    userApi.updateAvatar(changes.avatar),
+    userApi.updatePreferences(changes.prefs),
+  ]); <span class="cmt">// All succeed together</span>
+}
+
+<span class="cmt">// Pinia $patch — atomic state update</span>
+walletStore.$patch({
+  balance: newBalance,
+  lastUpdated: Date.now(),
+  assets: updatedAssets,
+}); <span class="cmt">// Single reactive update, one watcher trigger</span>
+
+<span class="cmt">// Form dirty tracking — track what changed</span>
+<span class="kw">const</span> formData = reactive({ name: <span class="str">''</span>, email: <span class="str">''</span> });
+<span class="kw">const</span> original = ref(structuredClone(formData));
+<span class="kw">const</span> isDirty = computed(() =&gt;
+  JSON.stringify(formData) !== JSON.stringify(original.value)
+);</pre>
+</div>
+
+</div></div>
+
+<!-- Data Mapper -->
+<div class="concept" id="data-mapper">
+<div class="concept-header" onclick="this.parentElement.classList.toggle('open')">
+  <h3>Data Mapper</h3>
+  <div><span class="badge badge-data">Data</span> <span class="chevron">▼</span></div>
+</div>
+<div class="concept-body">
+<div class="one-liner">Transfer data between objects and DB while keeping them independent of each other.</div>
+<div class="section-label">Bad Approach (Active Record)</div>
+<div class="bad-box">
+<pre><span class="cmt">// Domain object knows about DB — coupled</span>
+<span class="kw">class</span> User {
+  save() { db.query(<span class="str">`INSERT INTO users...`</span>); }
+  <span class="kw">static</span> find(id) { <span class="kw">return</span> db.query(<span class="str">`SELECT * FROM users WHERE id=${id}`</span>); }
+}
+<span class="cmt">// Testing User requires a database</span></pre>
+</div>
+<div class="section-label">Good Approach</div>
+<div class="good-box">
+<pre><span class="kw">class</span> User { name; email; } <span class="cmt">// Pure domain — no DB knowledge</span>
+
+<span class="kw">class</span> UserMapper {
+  toDomain(row) { <span class="kw">return new</span> User(row.user_name, row.email_addr); }
+  toPersistence(user) { <span class="kw">return</span> { user_name: user.name, email_addr: user.email }; }
+}
+<span class="cmt">// Domain objects are pure, testable without DB</span></pre>
+</div>
+<div class="section-label">Real-World</div>
+<div class="real-world"><strong>TypeORM/Hibernate</strong> Data Mapper mode vs. Active Record. Preferred in DDD because domain stays clean.</div>
+<div class="section-label">Vue 3 / TS Example</div>
+<div class="vue-box">
+<div class="vue-label">Vue 3 / TS</div>
+<pre><span class="cmt">// API response → domain model mapping</span>
+<span class="kw">interface</span> ApiTx { tx_hash: <span class="kw">string</span>; amount_wei: <span class="kw">string</span>; ts: <span class="kw">number</span>; }
+<span class="kw">interface</span> Transaction { hash: <span class="kw">string</span>; amount: <span class="kw">string</span>; date: Date; }
+
+<span class="kw">function</span> <span class="fn">mapTransaction</span>(raw: ApiTx): Transaction {
+  <span class="kw">return</span> {
+    hash: raw.tx_hash,
+    amount: weiToEth(raw.amount_wei),
+    date: <span class="kw">new</span> Date(raw.ts * 1000),
+  };
+}
+
+<span class="cmt">// toRaw() — strip Vue reactivity (domain → raw)</span>
+<span class="kw">const</span> rawData = toRaw(reactiveState); <span class="cmt">// For API submission</span>
+
+<span class="cmt">// markRaw() — prevent Vue from making it reactive</span>
+<span class="kw">const</span> chart = markRaw(<span class="kw">new</span> ChartInstance()); <span class="cmt">// Skip proxy overhead</span></pre>
+</div>
+
+</div></div>
+
+</section>
+
+<!-- ==================== TYPE THEORY ==================== -->
+<section class="category" id="cat-theory">
+<h2>Type Theory &amp; Complexity</h2>
+
+<!-- Type Systems -->
+<div class="concept" id="type-systems">
+<div class="concept-header" onclick="this.parentElement.classList.toggle('open')">
+  <h3>Type Systems</h3>
+  <div><span class="badge badge-theory">Theory</span> <span class="chevron">▼</span></div>
+</div>
+<div class="concept-body">
+<div class="one-liner">Classify values to prevent illegal operations at compile time — more types, fewer bugs.</div>
+<div class="section-label">Spectrum</div>
+<div class="problem-box" style="border-left-color: var(--cyan)">
+<strong>Untyped</strong> → Assembly (anything goes)<br>
+<strong>Dynamic</strong> → JS, Python (checked at runtime)<br>
+<strong>Static</strong> → Java, Go (checked at compile time)<br>
+<strong>Strong Static</strong> → Haskell, Rust (rich types, no implicit coercion)<br>
+<strong>Dependent</strong> → Idris, Agda (types can depend on values)
+</div>
+<div class="section-label">Bad Approach</div>
+<div class="bad-box">
+<pre><span class="cmt">// Dynamic — errors only found at runtime</span>
+<span class="kw">function</span> add(a, b) { <span class="kw">return</span> a + b; }
+add(<span class="str">"5"</span>, 3); <span class="cmt">// "53" — silent bug!</span></pre>
+</div>
+<div class="section-label">Good Approach</div>
+<div class="good-box">
+<pre><span class="kw">function</span> add(a: <span class="kw">number</span>, b: <span class="kw">number</span>): <span class="kw">number</span> { <span class="kw">return</span> a + b; }
+add(<span class="str">"5"</span>, 3); <span class="cmt">// TS Error: Argument of type 'string' not assignable</span>
+
+<span class="cmt">// Even better — branded types for domain safety:</span>
+<span class="kw">type</span> USD = number &amp; { __brand: <span class="str">"USD"</span> };
+<span class="kw">type</span> EUR = number &amp; { __brand: <span class="str">"EUR"</span> };
+<span class="kw">function</span> addUSD(a: USD, b: USD): USD;
+<span class="cmt">// addUSD(usd(10), eur(5)); // Type error! Can't mix currencies</span></pre>
+</div>
+</div></div>
+
+<!-- ADT -->
+<div class="concept" id="adt">
+<div class="concept-header" onclick="this.parentElement.classList.toggle('open')">
+  <h3>Algebraic Data Types (ADT)</h3>
+  <div><span class="badge badge-theory">Theory</span> <span class="chevron">▼</span></div>
+</div>
+<div class="concept-body">
+<div class="one-liner">Combine types via sum (OR) and product (AND) for precise domain modeling.</div>
+<div class="section-label">Concepts</div>
+<div class="problem-box" style="border-left-color: var(--purple)">
+<strong>Product type</strong> = A AND B (tuples, records): <code>{ name: string, age: number }</code><br>
+<strong>Sum type</strong> = A OR B (tagged unions): <code>"loading" | "success" | "error"</code>
+</div>
+<div class="section-label">Bad Approach</div>
+<div class="bad-box">
+<pre><span class="cmt">// Impossible states are representable</span>
+<span class="kw">type</span> ApiState = {
+  loading: boolean;
+  data: Data | null;
+  error: Error | null;
+}
+<span class="cmt">// Can have loading=true AND data AND error simultaneously — makes no sense</span></pre>
+</div>
+<div class="section-label">Good Approach</div>
+<div class="good-box">
+<pre><span class="cmt">// Sum type — impossible states are unrepresentable</span>
+<span class="kw">type</span> ApiState =
+  | { status: <span class="str">"idle"</span> }
+  | { status: <span class="str">"loading"</span> }
+  | { status: <span class="str">"success"</span>; data: Data }
+  | { status: <span class="str">"error"</span>; error: Error };
+
+<span class="cmt">// TypeScript exhaustiveness checking:</span>
+<span class="kw">switch</span> (state.status) {
+  <span class="kw">case</span> <span class="str">"success"</span>: <span class="kw">return</span> state.data; <span class="cmt">// TS knows data exists here</span>
+  <span class="kw">case</span> <span class="str">"error"</span>: <span class="kw">return</span> state.error;  <span class="cmt">// TS knows error exists here</span>
+}</pre>
+</div>
+<div class="section-label">Real-World</div>
+<div class="real-world"><strong>Rust's Result&lt;T, E&gt; and Option&lt;T&gt;</strong>, <strong>Redux action types</strong>, <strong>React state machines</strong>, <strong>API response modeling</strong>.</div>
+<div class="section-label">Vue 3 / TS Example</div>
+<div class="vue-box">
+<div class="vue-label">Vue 3 / TS</div>
+<pre><span class="cmt">// Discriminated union for component state</span>
+<span class="kw">type</span> AsyncState&lt;T&gt; =
+  | { status: <span class="str">'idle'</span> }
+  | { status: <span class="str">'loading'</span> }
+  | { status: <span class="str">'success'</span>; data: T }
+  | { status: <span class="str">'error'</span>; error: Error };
+
+<span class="kw">const</span> state = ref&lt;AsyncState&lt;Asset[]&gt;&gt;({ status: <span class="str">'idle'</span> });
+
+<span class="cmt">// Exhaustive switch in template logic</span>
+<span class="kw">switch</span> (state.value.status) {
+  <span class="kw">case</span> <span class="str">'idle'</span>: <span class="kw">return</span> <span class="str">'Press to load'</span>;
+  <span class="kw">case</span> <span class="str">'loading'</span>: <span class="kw">return</span> <span class="str">'Loading...'</span>;
+  <span class="kw">case</span> <span class="str">'success'</span>: <span class="kw">return</span> state.value.data; <span class="cmt">// TS knows data exists</span>
+  <span class="kw">case</span> <span class="str">'error'</span>: <span class="kw">return</span> state.value.error.message;
+}
+
+<span class="cmt">// Result pattern</span>
+<span class="kw">type</span> Result&lt;T, E = Error&gt; =
+  | { ok: <span class="kw">true</span>; value: T }
+  | { ok: <span class="kw">false</span>; error: E };</pre>
+</div>
+
+<div class="section-label">Vue 3 / TS Example</div>
+<div class="vue-box">
+<div class="vue-label">Vue 3 / TS</div>
+<pre><span class="cmt">// TypeScript strict mode catches bugs at compile time</span>
+<span class="kw">const</span> balance: <span class="kw">string</span> = getBalance(); <span class="cmt">// NOT number — use Big.js</span>
+
+<span class="cmt">// Branded types for type-safe IDs</span>
+<span class="kw">type</span> UserId = <span class="kw">string</span> &amp; { __brand: <span class="str">'UserId'</span> };
+<span class="kw">type</span> TxId = <span class="kw">string</span> &amp; { __brand: <span class="str">'TxId'</span> };
+<span class="kw">function</span> <span class="fn">getUser</span>(id: UserId) { ... }
+getUser(txId); <span class="cmt">// ✗ Type error! Can't pass TxId as UserId</span>
+
+<span class="cmt">// as const for literal types</span>
+<span class="kw">const</span> NETWORKS = [<span class="str">'ethereum'</span>, <span class="str">'bitcoin'</span>, <span class="str">'tron'</span>] <span class="kw">as const</span>;
+<span class="kw">type</span> Network = (<span class="kw">typeof</span> NETWORKS)[<span class="kw">number</span>]; <span class="cmt">// 'ethereum' | 'bitcoin' | 'tron'</span>
+
+<span class="cmt">// Template literal types for route paths</span>
+<span class="kw">type</span> Route = <span class="str">`/${<span class="kw">string</span>}`</span>;
+<span class="kw">function</span> <span class="fn">navigate</span>(path: Route) { ... }
+navigate(<span class="str">'/wallet'</span>);  <span class="cmt">// ✓</span>
+navigate(<span class="str">'wallet'</span>);   <span class="cmt">// ✗ Missing leading slash</span></pre>
+</div>
+
+</div></div>
+
+<!-- Big O -->
+<div class="concept" id="big-o">
+<div class="concept-header" onclick="this.parentElement.classList.toggle('open')">
+  <h3>Big O Notation</h3>
+  <div><span class="badge badge-theory">Theory</span> <span class="chevron">▼</span></div>
+</div>
+<div class="concept-body">
+<div class="one-liner">Upper bound on growth rate — how algorithm time/space scales with input size.</div>
+<div class="section-label">Common Complexities</div>
+<div class="problem-box" style="border-left-color: var(--green)">
+<strong>O(1)</strong> — constant: hash lookup, array index<br>
+<strong>O(log n)</strong> — logarithmic: binary search<br>
+<strong>O(n)</strong> — linear: single loop, array scan<br>
+<strong>O(n log n)</strong> — linearithmic: merge sort, heap sort<br>
+<strong>O(n²)</strong> — quadratic: nested loops, bubble sort<br>
+<strong>O(2ⁿ)</strong> — exponential: brute-force subsets<br>
+<strong>O(n!)</strong> — factorial: brute-force permutations
+</div>
+<div class="section-label">Example</div>
+<div class="bad-box">
+<pre><span class="cmt">// O(n²) — checking duplicates with nested loops</span>
+<span class="kw">function</span> <span class="fn">hasDupes</span>(arr) {
+  <span class="kw">for</span> (<span class="kw">let</span> i = 0; i &lt; arr.length; i++)
+    <span class="kw">for</span> (<span class="kw">let</span> j = i+1; j &lt; arr.length; j++)
+      <span class="kw">if</span> (arr[i] === arr[j]) <span class="kw">return true</span>;
+}</pre>
+</div>
+<div class="good-box">
+<pre><span class="cmt">// O(n) — use a Set</span>
+<span class="kw">function</span> <span class="fn">hasDupes</span>(arr) {
+  <span class="kw">const</span> seen = <span class="kw">new</span> Set();
+  <span class="kw">for</span> (<span class="kw">const</span> x <span class="kw">of</span> arr) {
+    <span class="kw">if</span> (seen.has(x)) <span class="kw">return true</span>;
+    seen.add(x);
+  }
+}</pre>
+</div>
+</div></div>
+
+<!-- Amortized -->
+<div class="concept" id="amortized">
+<div class="concept-header" onclick="this.parentElement.classList.toggle('open')">
+  <h3>Amortized Complexity</h3>
+  <div><span class="badge badge-theory">Theory</span> <span class="chevron">▼</span></div>
+</div>
+<div class="concept-body">
+<div class="one-liner">Average cost per operation over a worst-case sequence — occasional expensive ops are OK.</div>
+<div class="section-label">Classic Example: Dynamic Array</div>
+<div class="good-box">
+<pre><span class="cmt">// ArrayList.add() is O(1) amortized:</span>
+<span class="cmt">// Most appends: O(1) — just write to next slot</span>
+<span class="cmt">// Occasionally: O(n) — array full, copy everything to 2× bigger array</span>
+<span class="cmt">//</span>
+<span class="cmt">// After n insertions: n cheap + log(n) expensive</span>
+<span class="cmt">// Total work ≈ n + n/2 + n/4 + ... ≈ 2n → O(n) total → O(1) per op</span>
+
+<span class="cmt">// Other examples:</span>
+<span class="cmt">// - Hash table rehashing: O(1) amortized insert</span>
+<span class="cmt">// - Splay tree: O(log n) amortized search</span></pre>
+</div>
+<div class="sw-grid">
+  <div><div class="section-label">Key Insight</div><ul class="strengths"><li>Don't over-optimize for rare worst cases</li><li>Bulk operations average out spikes</li></ul></div>
+  <div><div class="section-label">Watch Out</div><ul class="weaknesses"><li>Not suitable for real-time systems (individual ops can spike)</li><li>Different from average case (amortized is worst-case guaranteed)</li></ul></div>
+</div>
+</div></div>
+
+<!-- Hashing -->
+<div class="concept" id="hashing">
+<div class="concept-header" onclick="this.parentElement.classList.toggle('open')">
+  <h3>Hashing</h3>
+  <div><span class="badge badge-theory">Theory</span> <span class="chevron">▼</span></div>
+</div>
+<div class="concept-body">
+<div class="one-liner">Map arbitrary data to fixed-size values for O(1) average lookup — the backbone of hash maps.</div>
+<div class="section-label">Key Properties</div>
+<div class="problem-box" style="border-left-color: var(--accent)">
+<strong>Deterministic</strong> — same input always gives same hash.<br>
+<strong>Uniform distribution</strong> — minimize collisions.<br>
+<strong>Fast</strong> — computing hash should be cheap.<br>
+<strong>Collision handling</strong> — chaining (linked list) or open addressing (probing).
+</div>
+<div class="section-label">Example</div>
+<div class="good-box">
+<pre><span class="cmt">// Hash map: O(1) average, O(n) worst case (all collisions)</span>
+<span class="kw">const</span> map = <span class="kw">new</span> Map();
+map.set(<span class="str">"key"</span>, value);     <span class="cmt">// hash("key") → bucket index → store</span>
+map.get(<span class="str">"key"</span>);             <span class="cmt">// hash("key") → bucket index → retrieve</span>
+
+<span class="cmt">// Cryptographic hashing (SHA-256): one-way, collision-resistant</span>
+<span class="cmt">// Used for: passwords, integrity checks, blockchain</span>
+<span class="cmt">// NOT for hash maps (too slow)</span></pre>
+</div>
+<div class="section-label">Real-World</div>
+<div class="real-world"><strong>Every language's dict/map/object</strong>, <strong>database indexes</strong>, <strong>caches</strong>, <strong>consistent hashing</strong> for distributed systems (ring-based load balancing).</div>
+<div class="section-label">Vue 3 / TS Example</div>
+<div class="vue-box">
+<div class="vue-label">Vue 3 / TS</div>
+<pre><span class="cmt">// Map/Set for O(1) lookups in components</span>
+<span class="kw">const</span> selectedSymbols = <span class="kw">new</span> Set([<span class="str">'BTC'</span>, <span class="str">'ETH'</span>, <span class="str">'USDT'</span>]);
+selectedSymbols.has(asset.symbol); <span class="cmt">// O(1) vs array.includes O(n)</span>
+
+<span class="kw">const</span> priceMap = <span class="kw">new</span> Map&lt;<span class="kw">string</span>, <span class="kw">string</span>&gt;();
+priceMap.set(<span class="str">'BTC'</span>, <span class="str">'64000.00'</span>);
+priceMap.get(<span class="str">'BTC'</span>); <span class="cmt">// O(1)</span>
+
+<span class="cmt">// Content hashing in Vite builds</span>
+<span class="cmt">// assets/index-a1b2c3d4.js ← hash of file content</span>
+<span class="cmt">// Same content → same hash → browser cache hit</span>
+<span class="cmt">// Changed content → new hash → cache bust</span>
+
+<span class="cmt">// Route path matching uses hashing internally</span>
+<span class="cmt">// router matches '/wallet/BTC' to route pattern in O(1)</span></pre>
+</div>
+
+<div class="section-label">Vue 3 / TS Example</div>
+<div class="vue-box">
+<div class="vue-label">Vue 3 / TS</div>
+<pre><span class="cmt">// Vue's batched DOM updates — amortized O(1) per ref change</span>
+count.value++;       <span class="cmt">// No DOM update yet</span>
+name.value = <span class="str">'Bob'</span>;  <span class="cmt">// No DOM update yet</span>
+list.value.push(x);  <span class="cmt">// No DOM update yet</span>
+<span class="cmt">// → nextTick: ONE batched DOM update (amortized cost)</span>
+
+<span class="cmt">// Virtual scroll — amortized chunk loading</span>
+<span class="cmt">// 10,000 items but only render ~20 visible</span>
+<span class="cmt">// Load chunks of 50 on scroll — occasional O(50), amortized O(1) per item</span>
+
+<span class="cmt">// Dynamic array growth in JS</span>
+<span class="kw">const</span> arr = [];
+<span class="kw">for</span> (<span class="kw">let</span> i = 0; i &lt; 1e6; i++) arr.push(i);
+<span class="cmt">// Push is O(1) amortized — occasional reallocation is O(n)</span></pre>
+</div>
+
+<div class="section-label">Vue 3 / TS Example</div>
+<div class="vue-box">
+<div class="vue-label">Vue 3 / TS</div>
+<pre><span class="cmt">// v-for with :key — O(n) diff vs O(n²) without keys</span>
+&lt;div v-for=<span class="str">"asset in assets"</span> :key=<span class="str">"asset.symbol"</span>&gt; <span class="cmt">&lt;!-- O(n) --&gt;</span>
+&lt;div v-for=<span class="str">"asset in assets"</span>&gt; <span class="cmt">&lt;!-- O(n²) — Vue can't track items --&gt;</span>
+
+<span class="cmt">// computed() = O(1) read after O(n) computation (memoized)</span>
+<span class="kw">const</span> total = computed(() =&gt;
+  assets.value.reduce((s, a) =&gt; Big(s).plus(a.balance).toString(), <span class="str">'0'</span>)
+); <span class="cmt">// Recomputes only when assets change, not on every access</span>
+
+<span class="cmt">// shallowRef for large arrays — O(1) reactivity check</span>
+<span class="kw">const</span> prices = shallowRef&lt;Price[]&gt;([]);
+<span class="cmt">// Deep ref: wraps every element in Proxy — O(n) overhead</span>
+<span class="cmt">// Shallow ref: only tracks .value replacement — O(1)</span>
+
+<span class="cmt">// Map lookup O(1) vs Array.find O(n)</span>
+<span class="kw">const</span> assetMap = <span class="kw">new</span> Map(assets.map(a =&gt; [a.symbol, a]));
+assetMap.get(<span class="str">'BTC'</span>); <span class="cmt">// O(1) instead of assets.find(a => a.symbol === 'BTC')</span></pre>
+</div>
+
+</div></div>
+
+</section>
+
+<!-- ==================== DISTRIBUTED ==================== -->
+<section class="category" id="cat-distributed">
+<h2>Distributed Systems</h2>
+
+<!-- CAP -->
+<div class="concept" id="cap">
+<div class="concept-header" onclick="this.parentElement.classList.toggle('open')">
+  <h3>CAP Theorem</h3>
+  <div><span class="badge badge-distributed">Distributed</span> <span class="chevron">▼</span></div>
+</div>
+<div class="concept-body">
+<div class="one-liner">Pick two of three: Consistency, Availability, Partition tolerance — you can't have all three.</div>
+<div class="section-label">The Three Properties</div>
+<div class="problem-box" style="border-left-color: var(--pink)">
+<strong>C — Consistency</strong>: Every read receives the most recent write.<br>
+<strong>A — Availability</strong>: Every request receives a response (not an error).<br>
+<strong>P — Partition Tolerance</strong>: System continues despite network splits between nodes.
+</div>
+<div class="section-label">Trade-offs</div>
+<div class="good-box">
+<pre><span class="cmt">// CP (Consistency + Partition tolerance): refuse requests during partitions</span>
+<span class="cmt">// → MongoDB (default), HBase, Zookeeper</span>
+<span class="cmt">// Use when: financial transactions, inventory counts</span>
+
+<span class="cmt">// AP (Availability + Partition tolerance): serve stale data during partitions</span>
+<span class="cmt">// → Cassandra, DynamoDB, CouchDB</span>
+<span class="cmt">// Use when: social media feeds, shopping carts</span>
+
+<span class="cmt">// CA (Consistency + Availability): impossible in distributed systems</span>
+<span class="cmt">// → Only single-node databases (traditional RDBMS)</span></pre>
+</div>
+</div></div>
+
+<!-- ACID -->
+<div class="concept" id="acid">
+<div class="concept-header" onclick="this.parentElement.classList.toggle('open')">
+  <h3>ACID</h3>
+  <div><span class="badge badge-distributed">Database</span> <span class="chevron">▼</span></div>
+</div>
+<div class="concept-body">
+<div class="one-liner">Atomicity, Consistency, Isolation, Durability — guarantees for reliable DB transactions.</div>
+<div class="section-label">Properties</div>
+<div class="good-box">
+<pre><span class="cmt">// A — Atomicity: all or nothing</span>
+BEGIN;
+  UPDATE accounts SET balance = balance - 100 WHERE id = 1;
+  UPDATE accounts SET balance = balance + 100 WHERE id = 2;
+COMMIT; <span class="cmt">// Both succeed or both fail</span>
+
+<span class="cmt">// C — Consistency: DB moves from one valid state to another</span>
+<span class="cmt">// Constraints, triggers, foreign keys enforced</span>
+
+<span class="cmt">// I — Isolation: concurrent transactions don't interfere</span>
+<span class="cmt">// Levels: READ UNCOMMITTED → READ COMMITTED → REPEATABLE READ → SERIALIZABLE</span>
+
+<span class="cmt">// D — Durability: committed data survives crashes (WAL, fsync)</span></pre>
+</div>
+<div class="section-label">Real-World</div>
+<div class="real-world"><strong>PostgreSQL, MySQL InnoDB, Oracle</strong> — any system where correctness beats throughput: banking, booking systems, medical records.</div>
+<div class="section-label">Vue 3 / TS Example</div>
+<div class="vue-box">
+<div class="vue-label">Vue 3 / TS</div>
+<pre><span class="cmt">// localStorage is NOT atomic — can leave partial state</span>
+localStorage.setItem(<span class="str">'balance'</span>, newBalance);
+<span class="cmt">// ← crash here = inconsistent state</span>
+localStorage.setItem(<span class="str">'lastTx'</span>, txId);
+
+<span class="cmt">// IndexedDB transactions ARE atomic</span>
+<span class="kw">const</span> tx = db.transaction([<span class="str">'wallet'</span>], <span class="str">'readwrite'</span>);
+tx.objectStore(<span class="str">'wallet'</span>).put({ id: 1, balance: newBalance });
+tx.objectStore(<span class="str">'wallet'</span>).put({ id: 1, lastTx: txId });
+<span class="cmt">// Both succeed or both fail — ACID</span>
+
+<span class="cmt">// Pinia $patch — atomic state update</span>
+store.$patch({
+  balance: <span class="str">'100.00'</span>,
+  pendingTx: <span class="kw">null</span>,
+  lastUpdated: Date.now(),
+}); <span class="cmt">// One reactive flush — components see consistent state</span></pre>
+</div>
+
+<div class="section-label">Vue 3 / TS Example</div>
+<div class="vue-box">
+<div class="vue-label">Vue 3 / TS</div>
+<pre><span class="cmt">// Offline-first PWA — AP choice (Availability + Partition tolerance)</span>
+<span class="cmt">// Service worker cache-first strategy</span>
+self.addEventListener(<span class="str">'fetch'</span>, (e) =&gt; {
+  e.respondWith(
+    caches.match(e.request)          <span class="cmt">// Try cache first (Available)</span>
+      .then(r =&gt; r || fetch(e.request)) <span class="cmt">// Fallback to network</span>
+  );
+});
+
+<span class="cmt">// stale-while-revalidate — show stale, update in background</span>
+<span class="cmt">// TanStack Query does this with staleTime config</span>
+useQuery({
+  queryKey: [<span class="str">'prices'</span>],
+  queryFn: fetchPrices,
+  staleTime: 60_000, <span class="cmt">// Serve stale for 60s (available but maybe stale)</span>
+});
+<span class="cmt">// Trade-off: user sees slightly outdated prices (consistency)</span>
+<span class="cmt">// but app always responds instantly (availability)</span></pre>
+</div>
+
+</div></div>
+
+<!-- BASE -->
+<div class="concept" id="base">
+<div class="concept-header" onclick="this.parentElement.classList.toggle('open')">
+  <h3>BASE</h3>
+  <div><span class="badge badge-distributed">Database</span> <span class="chevron">▼</span></div>
+</div>
+<div class="concept-body">
+<div class="one-liner">Basically Available, Soft state, Eventually consistent — relaxed ACID for distributed systems.</div>
+<div class="section-label">Comparison</div>
+<div class="good-box">
+<pre><span class="cmt">// ACID: "I need the absolute truth right now"</span>
+<span class="cmt">// BASE: "I'll take a close-enough answer and it'll converge"</span>
+
+<span class="cmt">// BA — Basically Available: system always responds (may be stale)</span>
+<span class="cmt">// S  — Soft state: state may change without input (background sync)</span>
+<span class="cmt">// E  — Eventually consistent: given time, all nodes converge</span>
+
+<span class="cmt">// Example: Shopping cart</span>
+<span class="cmt">// User adds item → local replica updated immediately → shown to user</span>
+<span class="cmt">// Background: replicate to other nodes (eventually consistent)</span>
+<span class="cmt">// If network partition: user still sees their cart (available, maybe stale)</span></pre>
+</div>
+<div class="section-label">Real-World</div>
+<div class="real-world"><strong>DynamoDB, Cassandra, Riak</strong> — content delivery, social feeds, session stores. Amazon's shopping cart is famously BASE.</div>
+<div class="section-label">Vue 3 / TS Example</div>
+<div class="vue-box">
+<div class="vue-label">Vue 3 / TS</div>
+<pre><span class="cmt">// Optimistic UI updates — Basically Available</span>
+<span class="kw">const</span> { mutate } = useMutation({
+  mutationFn: walletApi.transfer,
+  onMutate: (vars) =&gt; {
+    <span class="cmt">// Save previous value for rollback</span>
+    <span class="kw">const</span> prev = queryClient.getQueryData([<span class="str">'balance'</span>]);
+    <span class="cmt">// Immediately update UI (soft state)</span>
+    queryClient.setQueryData([<span class="str">'balance'</span>],
+      Big(prev <span class="kw">as string</span>).minus(vars.amount).toString()
+    );
+    <span class="kw">return</span> { prev }; <span class="cmt">// Context for rollback</span>
+  },
+  onError: (_, __, context) =&gt; {
+    <span class="cmt">// Rollback on failure (eventually consistent)</span>
+    queryClient.setQueryData([<span class="str">'balance'</span>], context?.prev);
+  },
+});
+
+<span class="cmt">// stale-while-revalidate — cache-first, update in background</span>
+<span class="cmt">// User sees stale data instantly → fresh data arrives later</span>
+<span class="cmt">// Soft state: UI is "good enough" until confirmed</span></pre>
+</div>
+
+</div></div>
+
+<!-- Consistency Models -->
+<div class="concept" id="consistency">
+<div class="concept-header" onclick="this.parentElement.classList.toggle('open')">
+  <h3>Consistency Models</h3>
+  <div><span class="badge badge-distributed">Distributed</span> <span class="chevron">▼</span></div>
+</div>
+<div class="concept-body">
+<div class="one-liner">Spectrum from linearizable (strongest) to eventual (weakest) — defines what readers see after writes.</div>
+<div class="section-label">Hierarchy (strongest → weakest)</div>
+<div class="good-box">
+<pre><span class="cmt">// 1. Linearizable (strongest)</span>
+<span class="cmt">//    Every op appears to happen atomically at one point in time</span>
+<span class="cmt">//    → Spanner, CockroachDB (GPS + atomic clocks)</span>
+
+<span class="cmt">// 2. Sequential Consistency</span>
+<span class="cmt">//    All nodes see same order, but not necessarily real-time</span>
+<span class="cmt">//    → Zookeeper</span>
+
+<span class="cmt">// 3. Causal Consistency</span>
+<span class="cmt">//    Causally related ops seen in order; concurrent ops may differ</span>
+<span class="cmt">//    → MongoDB (causal sessions)</span>
+
+<span class="cmt">// 4. Read-your-writes</span>
+<span class="cmt">//    You always see your own writes (others may lag)</span>
+
+<span class="cmt">// 5. Eventual Consistency (weakest)</span>
+<span class="cmt">//    Given enough time, all replicas converge</span>
+<span class="cmt">//    → DynamoDB, DNS, CDN caches</span></pre>
+</div>
+</div></div>
+
+<!-- Consensus -->
+<div class="concept" id="consensus">
+<div class="concept-header" onclick="this.parentElement.classList.toggle('open')">
+  <h3>Consensus</h3>
+  <div><span class="badge badge-distributed">Distributed</span> <span class="chevron">▼</span></div>
+</div>
+<div class="concept-body">
+<div class="one-liner">Agreement among distributed nodes on a single value despite failures — the core of distributed systems.</div>
+<div class="section-label">Problem</div>
+<div class="problem-box">3 nodes need to agree on "who is the leader" or "what is the committed value". Nodes can crash, messages can be delayed or lost.</div>
+<div class="section-label">Key Algorithms</div>
+<div class="good-box">
+<pre><span class="cmt">// Paxos — theoretical foundation (Leslie Lamport)</span>
+<span class="cmt">// Raft — understandable alternative to Paxos (etcd, Consul)</span>
+<span class="cmt">// PBFT — Byzantine fault tolerant (blockchain)</span>
+
+<span class="cmt">// Raft simplified:</span>
+<span class="cmt">// 1. Leader election: nodes vote, majority wins</span>
+<span class="cmt">// 2. Log replication: leader appends entries, replicates to followers</span>
+<span class="cmt">// 3. Commit: once majority acknowledges, entry is committed</span>
+<span class="cmt">// 4. Leader dies? New election. Committed data safe.</span></pre>
+</div>
+<div class="section-label">Real-World</div>
+<div class="real-world"><strong>etcd</strong> (Kubernetes state), <strong>Consul</strong> (service discovery), <strong>Zookeeper</strong> (Kafka coordination), <strong>CockroachDB</strong> (distributed SQL).</div>
+<div class="section-label">Vue 3 / TS Example</div>
+<div class="vue-box">
+<div class="vue-label">Vue 3 / TS</div>
+<pre><span class="cmt">// BroadcastChannel leader election for cross-tab coordination</span>
+<span class="kw">const</span> channel = <span class="kw">new</span> BroadcastChannel(<span class="str">'leader-election'</span>);
+<span class="kw">const</span> myId = crypto.randomUUID();
+<span class="kw">const</span> myTs = Date.now();
+<span class="kw">let</span> isLeader = <span class="kw">true</span>;
+
+channel.postMessage({ type: <span class="str">'CLAIM'</span>, id: myId, ts: myTs });
+channel.onmessage = (e) =&gt; {
+  <span class="kw">if</span> (e.data.type === <span class="str">'CLAIM'</span> &amp;&amp; e.data.ts &lt; myTs) isLeader = <span class="kw">false</span>;
+};
+<span class="cmt">// Oldest tab becomes leader (consensus)</span>
+
+<span class="cmt">// Shared state across tabs via localStorage events</span>
+window.addEventListener(<span class="str">'storage'</span>, (e) =&gt; {
+  <span class="kw">if</span> (e.key === <span class="str">'wallet-state'</span>) {
+    store.$patch(JSON.parse(e.newValue!)); <span class="cmt">// All tabs agree</span>
+  }
+});</pre>
+</div>
+
+<div class="section-label">Vue 3 / TS Example</div>
+<div class="vue-box">
+<div class="vue-label">Vue 3 / TS</div>
+<pre><span class="cmt">// TanStack Query consistency controls</span>
+useQuery({
+  queryKey: [<span class="str">'balance'</span>],
+  queryFn: walletApi.getBalance,
+  staleTime: 0,          <span class="cmt">// Strong: always refetch</span>
+  gcTime: 5 * 60_000,    <span class="cmt">// Keep in cache 5 min</span>
+});
+
+useQuery({
+  queryKey: [<span class="str">'prices'</span>],
+  queryFn: fetchPrices,
+  staleTime: 60_000,     <span class="cmt">// Eventual: serve stale for 1 min</span>
+});
+
+<span class="cmt">// Optimistic update = eventual consistency</span>
+<span class="cmt">// UI updates immediately, server confirms later</span>
+
+<span class="cmt">// Pessimistic update = strong consistency</span>
+<span class="cmt">// Wait for server response before updating UI</span>
+<span class="kw">const</span> { mutateAsync } = useMutation({ mutationFn: walletApi.send });
+<span class="kw">await</span> mutateAsync(data); <span class="cmt">// Wait for server</span>
+<span class="kw">await</span> queryClient.invalidateQueries([<span class="str">'balance'</span>]); <span class="cmt">// Refetch fresh</span></pre>
+</div>
+
+</div></div>
+
+<!-- Paxos -->
+<div class="concept" id="paxos">
+<div class="concept-header" onclick="this.parentElement.classList.toggle('open')">
+  <h3>Paxos</h3>
+  <div><span class="badge badge-distributed">Distributed</span> <span class="chevron">▼</span></div>
+</div>
+<div class="concept-body">
+<div class="one-liner">Consensus protocol: proposers, acceptors, learners reach agreement in async networks with failures.</div>
+<div class="section-label">Phases</div>
+<div class="good-box">
+<pre><span class="cmt">// Phase 1: Prepare</span>
+<span class="cmt">// Proposer sends Prepare(n) to majority of acceptors</span>
+<span class="cmt">// Acceptors: if n > any previously seen, promise not to accept lower</span>
+<span class="cmt">//            return any previously accepted value</span>
+
+<span class="cmt">// Phase 2: Accept</span>
+<span class="cmt">// If proposer gets majority promises:</span>
+<span class="cmt">//   - If any acceptor returned a value, propose that value (preserves safety)</span>
+<span class="cmt">//   - Otherwise, propose its own value</span>
+<span class="cmt">// Send Accept(n, value) to acceptors</span>
+<span class="cmt">// Acceptors: accept if no higher-numbered prepare seen</span>
+
+<span class="cmt">// Result: Once majority accepts → value is chosen → learners notified</span></pre>
+</div>
+<div class="sw-grid">
+  <div><div class="section-label">Strengths</div><ul class="strengths"><li>Proven correct (safety guaranteed)</li><li>Tolerates minority failures</li></ul></div>
+  <div><div class="section-label">Weaknesses</div><ul class="weaknesses"><li>Notoriously hard to understand &amp; implement</li><li>Livelock possible with competing proposers</li><li>Multi-Paxos needed for practical systems</li></ul></div>
+</div>
+</div></div>
+
+<!-- CRDT -->
+<div class="concept" id="crdt">
+<div class="concept-header" onclick="this.parentElement.classList.toggle('open')">
+  <h3>CRDT</h3>
+  <div><span class="badge badge-distributed">Distributed</span> <span class="chevron">▼</span></div>
+</div>
+<div class="concept-body">
+<div class="one-liner">Conflict-free Replicated Data Types — merge without coordination, always converge.</div>
+<div class="section-label">How It Works</div>
+<div class="good-box">
+<pre><span class="cmt">// G-Counter (grow-only counter) — simplest CRDT</span>
+<span class="cmt">// Each node maintains its own counter</span>
+<span class="cmt">// Merge: take max of each node's counter</span>
+Node A: {A: 3, B: 0}
+Node B: {A: 1, B: 5}
+Merge:  {A: 3, B: 5} → total = 8
+
+<span class="cmt">// LWW-Register (Last-Writer-Wins): timestamp resolves conflicts</span>
+<span class="cmt">// OR-Set (Observed-Remove Set): add/remove without conflicts</span>
+
+<span class="cmt">// Key property: merge is commutative, associative, idempotent</span>
+<span class="cmt">// merge(A, B) = merge(B, A)           — order doesn't matter</span>
+<span class="cmt">// merge(A, merge(B, C)) = merge(merge(A, B), C)</span>
+<span class="cmt">// merge(A, A) = A                     — safe to re-merge</span></pre>
+</div>
+<div class="section-label">Real-World</div>
+<div class="real-world"><strong>Figma</strong> (multiplayer design), <strong>Redis CRDT</strong> (geo-distributed), <strong>Riak</strong> (distributed KV store), <strong>Yjs/Automerge</strong> (collaborative text editing).</div>
+<div class="section-label">Vue 3 / TS Example</div>
+<div class="vue-box">
+<div class="vue-label">Vue 3 / TS</div>
+<pre><span class="cmt">// Yjs for collaborative editing in Vue</span>
+<span class="kw">import</span> * <span class="kw">as</span> Y <span class="kw">from</span> <span class="str">'yjs'</span>;
+<span class="kw">import</span> { WebrtcProvider } <span class="kw">from</span> <span class="str">'y-webrtc'</span>;
+
+<span class="kw">const</span> doc = <span class="kw">new</span> Y.Doc();
+<span class="kw">const</span> provider = <span class="kw">new</span> WebrtcProvider(<span class="str">'room-name'</span>, doc);
+<span class="kw">const</span> yText = doc.getText(<span class="str">'shared-text'</span>);
+
+<span class="cmt">// Bind CRDT to Vue reactive state</span>
+<span class="kw">const</span> text = ref(yText.toString());
+yText.observe(() =&gt; { text.value = yText.toString(); });
+
+<span class="cmt">// Multiple users edit simultaneously — no conflicts!</span>
+<span class="cmt">// CRDT merges automatically, always converges</span>
+<span class="cmt">// No central server needed for conflict resolution</span></pre>
+</div>
+
+<div class="section-label">Vue 3 / TS Example</div>
+<div class="vue-box">
+<div class="vue-label">Vue 3 / TS</div>
+<pre><span class="cmt">// Paxos isn't directly implemented in frontend code.</span>
+<span class="cmt">// But understanding it helps when your app talks to backends</span>
+<span class="cmt">// that use Paxos-based consensus (etcd, Zookeeper, CockroachDB).</span>
+
+<span class="cmt">// Frontend implication: these backends guarantee consistency</span>
+<span class="cmt">// but may have higher latency during leader election.</span>
+
+<span class="cmt">// Handle it with retry + timeout in your API layer:</span>
+<span class="kw">const</span> { data } = useQuery({
+  queryKey: [<span class="str">'config'</span>],
+  queryFn: () =&gt; api.get(<span class="str">'/config'</span>), <span class="cmt">// Backed by etcd (Paxos/Raft)</span>
+  retry: 3,
+  retryDelay: (attempt) =&gt; Math.min(1000 * 2 ** attempt, 10000),
+});
+<span class="cmt">// If leader election is happening, requests may timeout</span>
+<span class="cmt">// Retry with exponential backoff handles this gracefully</span></pre>
+</div>
+
+</div></div>
+
+</section>
+
+<!-- ==================== LOW LEVEL ==================== -->
+<section class="category" id="cat-lowlevel">
+<h2>Low-Level &amp; Performance</h2>
+
+<!-- CAS -->
+<div class="concept" id="cas">
+<div class="concept-header" onclick="this.parentElement.classList.toggle('open')">
+  <h3>CAS &amp; Atomics</h3>
+  <div><span class="badge badge-lowlevel">Low-Level</span> <span class="chevron">▼</span></div>
+</div>
+<div class="concept-body">
+<div class="one-liner">Compare-and-swap: lock-free atomic update — if value == expected, swap it, else retry.</div>
+<div class="section-label">How It Works</div>
+<div class="good-box">
+<pre><span class="cmt">// CAS is a single CPU instruction (CMPXCHG on x86)</span>
+<span class="cmt">// Pseudocode:</span>
+<span class="kw">function</span> <span class="fn">compareAndSwap</span>(address, expected, newValue) {
+  <span class="kw">if</span> (*address === expected) {  <span class="cmt">// atomic check</span>
+    *address = newValue;        <span class="cmt">// atomic write</span>
+    <span class="kw">return true</span>;
+  }
+  <span class="kw">return false</span>;
+}
+
+<span class="cmt">// Lock-free counter increment:</span>
+<span class="kw">do</span> {
+  old = counter.get();
+} <span class="kw">while</span> (!counter.compareAndSet(old, old + 1));
+
+<span class="cmt">// Java: AtomicInteger, AtomicReference</span>
+<span class="cmt">// C++: std::atomic, Rust: std::sync::atomic</span>
+<span class="cmt">// JS: Atomics.compareExchange (SharedArrayBuffer)</span></pre>
+</div>
+<div class="sw-grid">
+  <div><div class="section-label">Strengths</div><ul class="strengths"><li>No locks → no deadlocks</li><li>Better performance under low contention</li></ul></div>
+  <div><div class="section-label">Weaknesses</div><ul class="weaknesses"><li>ABA problem (value changed and changed back)</li><li>Spin-loop waste under high contention</li></ul></div>
+</div>
+</div></div>
+
+<!-- Memory Model -->
+<div class="concept" id="memory-model">
+<div class="concept-header" onclick="this.parentElement.classList.toggle('open')">
+  <h3>Memory Model</h3>
+  <div><span class="badge badge-lowlevel">Low-Level</span> <span class="chevron">▼</span></div>
+</div>
+<div class="concept-body">
+<div class="one-liner">Rules for how threads see each other's memory writes — defines visibility and ordering guarantees.</div>
+<div class="section-label">Problem</div>
+<div class="problem-box">CPUs and compilers reorder instructions for performance. Thread A writes <code>x=1; ready=true</code>, but Thread B might see <code>ready=true</code> before <code>x=1</code>!</div>
+<div class="section-label">Ordering Levels</div>
+<div class="good-box">
+<pre><span class="cmt">// Relaxed — no ordering guarantees (fastest)</span>
+<span class="cmt">// Acquire/Release — synchronized pairs (publish/subscribe pattern)</span>
+<span class="cmt">// Sequential Consistency — total order (slowest, safest)</span>
+
+<span class="cmt">// Java: volatile = acquire + release semantics</span>
+<span class="kw">volatile</span> boolean ready = <span class="kw">false</span>;
+<span class="cmt">// Thread A: x = 42; ready = true;    // release</span>
+<span class="cmt">// Thread B: if (ready) use(x);       // acquire — guaranteed to see x=42</span>
+
+<span class="cmt">// Happens-before relationship:</span>
+<span class="cmt">// volatile write → volatile read (same variable)</span>
+<span class="cmt">// synchronized block exit → synchronized block entry (same monitor)</span>
+<span class="cmt">// Thread.start() → first action in new thread</span></pre>
+</div>
+</div></div>
+
+<!-- Cache Locality -->
+<div class="concept" id="cache-locality">
+<div class="concept-header" onclick="this.parentElement.classList.toggle('open')">
+  <h3>Cache Locality</h3>
+  <div><span class="badge badge-lowlevel">Performance</span> <span class="chevron">▼</span></div>
+</div>
+<div class="concept-body">
+<div class="one-liner">Access memory sequentially to exploit CPU cache lines — arrays beat linked lists for traversal.</div>
+<div class="section-label">Bad Approach</div>
+<div class="bad-box">
+<pre><span class="cmt">// Linked list: each node allocated randomly in heap</span>
+<span class="cmt">// Following pointers = cache miss on every node</span>
+<span class="cmt">// L1 cache: ~1ns, Main memory: ~100ns (100× slower!)</span>
+
+<span class="cmt">// Matrix traversal — column-major on row-major layout</span>
+<span class="kw">for</span> (col = 0; col &lt; N; col++)
+  <span class="kw">for</span> (row = 0; row &lt; N; row++)
+    matrix[row][col] += 1; <span class="cmt">// Jumps in memory — cache misses</span></pre>
+</div>
+<div class="section-label">Good Approach</div>
+<div class="good-box">
+<pre><span class="cmt">// Row-major traversal — sequential memory access</span>
+<span class="kw">for</span> (row = 0; row &lt; N; row++)
+  <span class="kw">for</span> (col = 0; col &lt; N; col++)
+    matrix[row][col] += 1; <span class="cmt">// Sequential — cache line prefetched</span>
+
+<span class="cmt">// Use arrays/vectors instead of linked lists when possible</span>
+<span class="cmt">// "Struct of Arrays" (SoA) vs "Array of Structs" (AoS)</span>
+<span class="cmt">// SoA: x[], y[], z[] — better when processing one field at a time</span>
+<span class="cmt">// AoS: [{x,y,z}, ...] — better when processing all fields together</span></pre>
+</div>
+<div class="section-label">Real-World</div>
+<div class="real-world"><strong>Game engines (ECS architecture)</strong> — Entity Component System uses arrays of components for cache-friendly iteration. <strong>NumPy/BLAS</strong> matrix operations optimized for cache lines.</div>
+<div class="section-label">Vue 3 / TS Example</div>
+<div class="vue-box">
+<div class="vue-label">Vue 3 / TS</div>
+<pre><span class="cmt">// Flat arrays vs nested objects for v-for performance</span>
+<span class="cmt">// BAD — nested objects, poor cache locality</span>
+<span class="kw">const</span> assets = [{ meta: { price: { usd: <span class="str">'100'</span> } } }, ...];
+
+<span class="cmt">// GOOD — flat structure, sequential memory access</span>
+<span class="kw">const</span> prices = [<span class="str">'100'</span>, <span class="str">'200'</span>, <span class="str">'300'</span>]; <span class="cmt">// Flat array, cache-friendly</span>
+
+<span class="cmt">// shallowRef — avoid deep proxy wrapping</span>
+<span class="kw">const</span> bigList = shallowRef&lt;Item[]&gt;([]);
+<span class="cmt">// Deep reactive: every property of every item gets a Proxy</span>
+<span class="cmt">// shallowRef: only .value is reactive — much less overhead</span>
+
+<span class="cmt">// TypedArrays for number-heavy computation</span>
+<span class="kw">const</span> priceData = <span class="kw">new</span> Float64Array(10000);
+<span class="cmt">// Contiguous memory, perfect cache locality for iteration</span></pre>
+</div>
+
+<div class="section-label">Vue 3 / TS Example</div>
+<div class="vue-box">
+<div class="vue-label">Vue 3 / TS</div>
+<pre><span class="cmt">// SharedArrayBuffer + Atomics ordering guarantees</span>
+<span class="kw">const</span> sab = <span class="kw">new</span> SharedArrayBuffer(8);
+<span class="kw">const</span> view = <span class="kw">new</span> Int32Array(sab);
+
+<span class="cmt">// Worker A: write data then signal</span>
+view[0] = 42;                     <span class="cmt">// Data</span>
+Atomics.store(view, 1, 1);        <span class="cmt">// Signal (release semantics)</span>
+
+<span class="cmt">// Worker B: wait for signal, then read data</span>
+Atomics.wait(view, 1, 0);         <span class="cmt">// Block until signaled (acquire)</span>
+console.log(view[0]);              <span class="cmt">// Guaranteed to see 42</span>
+
+<span class="cmt">// postMessage uses structured clone — full copy, no sharing</span>
+worker.postMessage(data); <span class="cmt">// Deep clone, no memory model concerns</span>
+
+<span class="cmt">// Without Atomics: no ordering guarantee between workers</span>
+<span class="cmt">// JS main thread: single-threaded, no memory model issues</span></pre>
+</div>
+
+<div class="section-label">Vue 3 / TS Example</div>
+<div class="vue-box">
+<div class="vue-label">Vue 3 / TS</div>
+<pre><span class="cmt">// Atomics with SharedArrayBuffer in Web Workers</span>
+<span class="kw">const</span> sab = <span class="kw">new</span> SharedArrayBuffer(4);
+<span class="kw">const</span> view = <span class="kw">new</span> Int32Array(sab);
+
+<span class="cmt">// CAS: if view[0] === 0, set to 1 (atomic)</span>
+<span class="kw">const</span> old = Atomics.compareExchange(view, 0, 0, 1);
+<span class="kw">if</span> (old === 0) { <span class="cmt">/* we won the lock */</span> }
+
+<span class="cmt">// Optimistic concurrency with version check on API</span>
+<span class="kw">const</span> update = <span class="kw">async</span> (data: Profile) =&gt; {
+  <span class="kw">const</span> res = <span class="kw">await</span> api.put(<span class="str">'/profile'</span>, {
+    ...data,
+    version: data.version, <span class="cmt">// Server checks: if version matches, update</span>
+  });
+  <span class="kw">if</span> (res.status === 409) {
+    <span class="cmt">// Version mismatch — someone else edited. Refetch & retry</span>
+    <span class="kw">const</span> fresh = <span class="kw">await</span> api.get(<span class="str">'/profile'</span>);
+    <span class="cmt">// Show merge UI or auto-retry</span>
+  }
+};</pre>
+</div>
+
+</div></div>
+
+<!-- GC -->
+<div class="concept" id="gc">
+<div class="concept-header" onclick="this.parentElement.classList.toggle('open')">
+  <h3>Garbage Collection</h3>
+  <div><span class="badge badge-lowlevel">Low-Level</span> <span class="chevron">▼</span></div>
+</div>
+<div class="concept-body">
+<div class="one-liner">Automatic memory reclamation — trades manual control for safety, with pause-time trade-offs.</div>
+<div class="section-label">Strategies</div>
+<div class="good-box">
+<pre><span class="cmt">// 1. Reference Counting (Python, Swift, Obj-C)</span>
+<span class="cmt">//    Each object tracks # of references. Freed when count = 0.</span>
+<span class="cmt">//    ✓ Deterministic, incremental    ✗ Circular references leak</span>
+
+<span class="cmt">// 2. Mark-and-Sweep (JS V8, Java, Go)</span>
+<span class="cmt">//    Phase 1: Mark all reachable objects from roots</span>
+<span class="cmt">//    Phase 2: Sweep (free) unmarked objects</span>
+<span class="cmt">//    ✓ Handles cycles    ✗ Stop-the-world pauses</span>
+
+<span class="cmt">// 3. Generational GC (V8, JVM HotSpot)</span>
+<span class="cmt">//    Young gen: small, collected often (most objects die young)</span>
+<span class="cmt">//    Old gen: large, collected rarely</span>
+<span class="cmt">//    ✓ Optimized for common patterns    ✗ Promotion overhead</span>
+
+<span class="cmt">// 4. No GC — manual (C) or ownership (Rust)</span>
+<span class="cmt">//    Rust: compiler tracks lifetimes, frees at scope exit</span>
+<span class="cmt">//    ✓ Zero overhead    ✗ Learning curve, borrow checker fights</span></pre>
+</div>
+</div></div>
+
+<!-- Thread Safety -->
+<div class="concept" id="thread-safety">
+<div class="concept-header" onclick="this.parentElement.classList.toggle('open')">
+  <h3>Thread Safety</h3>
+  <div><span class="badge badge-lowlevel">Concurrency</span> <span class="chevron">▼</span></div>
+</div>
+<div class="concept-body">
+<div class="one-liner">Code that works correctly under concurrent access — via locks, immutability, or confinement.</div>
+<div class="section-label">Bad Approach</div>
+<div class="bad-box">
+<pre><span class="cmt">// Race condition — two threads incrementing shared counter</span>
+<span class="kw">let</span> count = 0;
+<span class="cmt">// Thread A: temp = count (0); temp++; count = temp (1)</span>
+<span class="cmt">// Thread B: temp = count (0); temp++; count = temp (1)</span>
+<span class="cmt">// Expected: 2, Got: 1</span></pre>
+</div>
+<div class="section-label">Solutions</div>
+<div class="good-box">
+<pre><span class="cmt">// 1. Mutual Exclusion (locks/mutexes)</span>
+mutex.lock();
+count++;
+mutex.unlock();
+
+<span class="cmt">// 2. Atomic operations</span>
+atomicCount.incrementAndGet();
+
+<span class="cmt">// 3. Immutability — no writes = no races</span>
+<span class="kw">const</span> config = Object.freeze({ port: 3000 });
+
+<span class="cmt">// 4. Thread confinement — each thread owns its data</span>
+ThreadLocal&lt;Connection&gt; conn = ThreadLocal.withInitial(pool::getConn);
+
+<span class="cmt">// 5. Message passing — share by communicating (Go channels, actors)</span>
+ch &lt;- value <span class="cmt">// send</span>
+v := &lt;-ch   <span class="cmt">// receive</span></pre>
+</div>
+</div></div>
+
+</section>
+
+<!-- ==================== RELIABILITY ==================== -->
+<section class="category" id="cat-reliability">
+<h2>Reliability Patterns</h2>
+
+<!-- Idempotency -->
+<div class="concept" id="idempotency">
+<div class="concept-header" onclick="this.parentElement.classList.toggle('open')">
+  <h3>Idempotency</h3>
+  <div><span class="badge badge-reliability">Reliability</span> <span class="chevron">▼</span></div>
+</div>
+<div class="concept-body">
+<div class="one-liner">Same operation applied multiple times produces the same result — safe to retry.</div>
+<div class="section-label">Bad Approach</div>
+<div class="bad-box">
+<pre><span class="cmt">// Non-idempotent: double-charging on retry</span>
+POST /payments { amount: 100 }
+<span class="cmt">// Network timeout... client retries...</span>
+POST /payments { amount: 100 }
+<span class="cmt">// Customer charged $200!</span></pre>
+</div>
+<div class="section-label">Good Approach</div>
+<div class="good-box">
+<pre><span class="cmt">// Idempotency key — same key = same result</span>
+POST /payments
+  Idempotency-Key: abc-123
+  { amount: 100 }
+
+<span class="kw">function</span> <span class="fn">processPayment</span>(key, amount) {
+  <span class="kw">const</span> existing = <span class="kw">await</span> db.findByKey(key);
+  <span class="kw">if</span> (existing) <span class="kw">return</span> existing.result; <span class="cmt">// Already processed — return same result</span>
+  <span class="kw">const</span> result = <span class="kw">await</span> chargeCard(amount);
+  <span class="kw">await</span> db.save({ key, result });
+  <span class="kw">return</span> result;
+}
+<span class="cmt">// Retry-safe: first call charges, subsequent calls return cached result</span></pre>
+</div>
+<div class="section-label">Naturally Idempotent</div>
+<div class="good-box">
+<pre><span class="cmt">// PUT (set to specific value): PUT /users/1 { name: "Bob" }</span>
+<span class="cmt">// DELETE: DELETE /users/1 (already gone? Fine.)</span>
+<span class="cmt">// GET: read-only, always safe</span>
+
+<span class="cmt">// NOT idempotent: POST (create), increment operations</span></pre>
+</div>
+<div class="section-label">Real-World</div>
+<div class="real-world"><strong>Stripe API</strong> (Idempotency-Key header), <strong>AWS SQS</strong> (at-least-once delivery → consumers must be idempotent), <strong>Kafka consumer offsets</strong>.</div>
+<div class="section-label">Vue 3 / TS Example</div>
+<div class="vue-box">
+<div class="vue-label">Vue 3 / TS</div>
+<pre><span class="cmt">// Debounced submit button — prevent double submission</span>
+<span class="kw">const</span> isSubmitting = ref(<span class="kw">false</span>);
+<span class="kw">const</span> submit = <span class="kw">async</span> () =&gt; {
+  <span class="kw">if</span> (isSubmitting.value) <span class="kw">return</span>; <span class="cmt">// Idempotent guard</span>
+  isSubmitting.value = <span class="kw">true</span>;
+  <span class="kw">try</span> {
+    <span class="kw">await</span> api.post(<span class="str">'/transfer'</span>, data);
+  } <span class="kw">finally</span> {
+    isSubmitting.value = <span class="kw">false</span>;
+  }
+};
+
+<span class="cmt">// Idempotency key on POST requests</span>
+<span class="kw">const</span> idempotencyKey = crypto.randomUUID();
+<span class="kw">await</span> api.post(<span class="str">'/transfer'</span>, data, {
+  headers: { <span class="str">'Idempotency-Key'</span>: idempotencyKey },
+}); <span class="cmt">// Server deduplicates — safe to retry on network error</span>
+
+<span class="cmt">// TanStack mutation — disable button while pending</span>
+<span class="kw">const</span> { mutate, isPending } = useMutation({ mutationFn: transfer });
+<span class="cmt">// &lt;button :disabled="isPending"&gt; prevents double-click</span></pre>
+</div>
+
+<div class="section-label">Vue 3 / TS Example</div>
+<div class="vue-box">
+<div class="vue-label">Vue 3 / TS</div>
+<pre><span class="cmt">// JS is single-threaded BUT race conditions still happen!</span>
+
+<span class="cmt">// Race condition in async code</span>
+<span class="kw">let</span> balance = <span class="str">'100'</span>;
+<span class="kw">async function</span> <span class="fn">withdraw</span>(amount: <span class="kw">string</span>) {
+  <span class="kw">const</span> current = <span class="kw">await</span> api.getBalance(); <span class="cmt">// yields to event loop</span>
+  <span class="cmt">// Another withdraw() could run here!</span>
+  <span class="kw">await</span> api.setBalance(Big(current).minus(amount).toString());
+}
+
+<span class="cmt">// Fix: use a mutex/lock pattern</span>
+<span class="kw">let</span> pending = Promise.resolve();
+<span class="kw">function</span> <span class="fn">safeWithdraw</span>(amount: <span class="kw">string</span>) {
+  pending = pending.then(() =&gt; withdraw(amount));
+  <span class="kw">return</span> pending;
+}
+
+<span class="cmt">// Stale closure — common in composables</span>
+<span class="cmt">// Always use .value for refs, never close over primitive snapshots</span></pre>
+</div>
+
+<div class="section-label">Vue 3 / TS Example</div>
+<div class="vue-box">
+<div class="vue-label">Vue 3 / TS</div>
+<pre><span class="cmt">// Memory leak: uncleared watcher</span>
+<span class="cmt">// BAD — watcher keeps reference alive after component unmounts</span>
+<span class="kw">const</span> stop = watch(source, callback);
+<span class="cmt">// If component unmounts without calling stop(), leak!</span>
+
+<span class="cmt">// GOOD — Vue auto-cleans watchers in setup, or use onUnmounted</span>
+onUnmounted(() =&gt; {
+  stop();                 <span class="cmt">// Clean up watcher</span>
+  channel.close();        <span class="cmt">// Clean up BroadcastChannel</span>
+  observer.disconnect();  <span class="cmt">// Clean up IntersectionObserver</span>
+});
+
+<span class="cmt">// WeakRef / WeakMap — allow GC to collect</span>
+<span class="kw">const</span> cache = <span class="kw">new</span> WeakMap&lt;<span class="kw">object</span>, ComputedResult&gt;();
+<span class="cmt">// When key object is GC'd, entry is automatically removed</span>
+
+<span class="cmt">// Common leaks: event listeners, setInterval, closures over</span>
+<span class="cmt">// large data, detached DOM nodes, unresolved Promises</span></pre>
+</div>
+
+</div></div>
+
+<!-- Rate Limiting -->
+<div class="concept" id="rate-limiting">
+<div class="concept-header" onclick="this.parentElement.classList.toggle('open')">
+  <h3>Rate Limiting</h3>
+  <div><span class="badge badge-reliability">Reliability</span> <span class="chevron">▼</span></div>
+</div>
+<div class="concept-body">
+<div class="one-liner">Cap request throughput to protect services — token bucket, sliding window, or leaky bucket.</div>
+<div class="section-label">Algorithms</div>
+<div class="good-box">
+<pre><span class="cmt">// 1. Token Bucket (most common)</span>
+<span class="cmt">//    Bucket fills with tokens at fixed rate (e.g., 10/sec)</span>
+<span class="cmt">//    Each request consumes a token</span>
+<span class="cmt">//    No tokens? → 429 Too Many Requests</span>
+<span class="cmt">//    ✓ Allows bursts (up to bucket size)</span>
+
+<span class="kw">class</span> TokenBucket {
+  tokens = 10; maxTokens = 10; refillRate = 10; <span class="cmt">// per sec</span>
+
+  <span class="fn">allow</span>() {
+    <span class="kw">this</span>.refill();
+    <span class="kw">if</span> (<span class="kw">this</span>.tokens > 0) { <span class="kw">this</span>.tokens--; <span class="kw">return true</span>; }
+    <span class="kw">return false</span>;
+  }
+}
+
+<span class="cmt">// 2. Sliding Window Log — precise but memory-heavy</span>
+<span class="cmt">// 3. Sliding Window Counter — approximate, memory-efficient</span>
+<span class="cmt">// 4. Leaky Bucket — smooths bursts, constant output rate</span></pre>
+</div>
+<div class="section-label">Real-World</div>
+<div class="real-world"><strong>API gateways</strong> (Kong, AWS API Gateway), <strong>GitHub API</strong> (5000 req/hr), <strong>Nginx limit_req</strong>, <strong>Redis-based distributed rate limiting</strong>.</div>
+<div class="section-label">Vue 3 / TS Example</div>
+<div class="vue-box">
+<div class="vue-label">Vue 3 / TS</div>
+<pre><span class="cmt">// Debounce search input — don't fire API on every keystroke</span>
+<span class="kw">import</span> { useDebounceFn } <span class="kw">from</span> <span class="str">'@vueuse/core'</span>;
+
+<span class="kw">const</span> query = ref(<span class="str">''</span>);
+<span class="kw">const</span> search = useDebounceFn(<span class="kw">async</span> (q: <span class="kw">string</span>) =&gt; {
+  results.value = <span class="kw">await</span> api.search(q);
+}, 300); <span class="cmt">// Wait 300ms after last keystroke</span>
+
+watch(query, (q) =&gt; search(q));
+
+<span class="cmt">// Throttle scroll handler</span>
+<span class="kw">import</span> { useThrottleFn } <span class="kw">from</span> <span class="str">'@vueuse/core'</span>;
+<span class="kw">const</span> onScroll = useThrottleFn(() =&gt; {
+  <span class="cmt">// Runs at most once per 100ms</span>
+  checkInfiniteScroll();
+}, 100);
+
+<span class="cmt">// API call throttling with Axios interceptor</span>
+<span class="cmt">// Queue requests, release max N per second</span></pre>
+</div>
+
+</div></div>
+
+<!-- Fault Tolerance -->
+<div class="concept" id="fault-tolerance">
+<div class="concept-header" onclick="this.parentElement.classList.toggle('open')">
+  <h3>Fault Tolerance</h3>
+  <div><span class="badge badge-reliability">Reliability</span> <span class="chevron">▼</span></div>
+</div>
+<div class="concept-body">
+<div class="one-liner">System continues operating despite component failures — circuit breakers, retries, redundancy.</div>
+<div class="section-label">Patterns</div>
+<div class="good-box">
+<pre><span class="cmt">// 1. Circuit Breaker — stop calling a failing service</span>
+<span class="kw">class</span> CircuitBreaker {
+  state = <span class="str">"CLOSED"</span>; failures = 0; threshold = 5;
+
+  <span class="kw">async</span> <span class="fn">call</span>(fn) {
+    <span class="kw">if</span> (<span class="kw">this</span>.state === <span class="str">"OPEN"</span>) <span class="kw">throw new</span> Error(<span class="str">"Circuit open"</span>);
+    <span class="kw">try</span> {
+      <span class="kw">const</span> result = <span class="kw">await</span> fn();
+      <span class="kw">this</span>.failures = 0;
+      <span class="kw">return</span> result;
+    } <span class="kw">catch</span> (e) {
+      <span class="kw">if</span> (++<span class="kw">this</span>.failures >= <span class="kw">this</span>.threshold) <span class="kw">this</span>.state = <span class="str">"OPEN"</span>;
+      <span class="kw">throw</span> e;
+    }
+  }
+}
+
+<span class="cmt">// 2. Retry with exponential backoff</span>
+delay = baseDelay * 2^attempt + randomJitter
+
+<span class="cmt">// 3. Bulkhead — isolate failures to one partition</span>
+<span class="cmt">//    Separate thread pools per dependency</span>
+
+<span class="cmt">// 4. Timeout — don't wait forever</span>
+<span class="cmt">// 5. Fallback — degrade gracefully (cached data, default)</span>
+<span class="cmt">// 6. Redundancy — replicas, multi-AZ, active-passive</span></pre>
+</div>
+<div class="section-label">Real-World</div>
+<div class="real-world"><strong>Netflix Hystrix/Resilience4j</strong> (circuit breakers), <strong>AWS multi-AZ</strong> (redundancy), <strong>Kubernetes pod restarts</strong> (self-healing), <strong>CDN failover</strong>.</div>
+<div class="section-label">Vue 3 / TS Example</div>
+<div class="vue-box">
+<div class="vue-label">Vue 3 / TS</div>
+<pre><span class="cmt">// Axios retry interceptor</span>
+api.interceptors.response.use(<span class="kw">null</span>, <span class="kw">async</span> (err) =&gt; {
+  <span class="kw">if</span> (err.config.retryCount &lt; 3 &amp;&amp; err.response?.status &gt;= 500) {
+    err.config.retryCount = (err.config.retryCount || 0) + 1;
+    <span class="kw">await</span> <span class="kw">new</span> Promise(r =&gt; setTimeout(r, 1000 * err.config.retryCount));
+    <span class="kw">return</span> api(err.config); <span class="cmt">// Retry with backoff</span>
+  }
+  <span class="kw">throw</span> err;
+});
+
+<span class="cmt">// TanStack Query built-in retry</span>
+useQuery({
+  queryKey: [<span class="str">'balance'</span>],
+  queryFn: walletApi.getBalance,
+  retry: 3,
+  retryDelay: (attempt) =&gt; Math.min(1000 * 2 ** attempt, 30000),
+});
+
+<span class="cmt">// Fallback UI with Vue's Suspense + error boundary</span>
+&lt;Suspense&gt;
+  &lt;template #default&gt;&lt;AsyncComponent /&gt;&lt;/template&gt;
+  &lt;template #fallback&gt;&lt;LoadingSpinner /&gt;&lt;/template&gt;
+&lt;/Suspense&gt;</pre>
+</div>
+
+</div></div>
+
+</section>
+
+</main>
+
+<button id="top-btn" onclick="window.scrollTo({top:0})">↑</button>
+
+<script>
+// Back to top button
+window.addEventListener('scroll', () => {
+  document.getElementById('top-btn').classList.toggle('visible', window.scrollY > 400);
+});
+
+// Close sidebar on link click (mobile)
+document.querySelectorAll('.nav-links a').forEach(a => {
+  a.addEventListener('click', () => {
+    document.getElementById('sidebar').classList.remove('open');
+  });
+});
+
+// Highlight active nav link on scroll
+const sections = document.querySelectorAll('.concept');
+const navLinks = document.querySelectorAll('.nav-links a');
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      navLinks.forEach(l => l.classList.remove('active'));
+      const link = document.querySelector(`.nav-links a[href="#${e.target.id}"]`);
+      if (link) link.classList.add('active');
+    }
+  });
+}, { rootMargin: '-80px 0px -60% 0px' });
+sections.forEach(s => observer.observe(s));
+
+// Expand all on double-click header
+document.addEventListener('dblclick', e => {
+  if (e.target.closest('.category > h2')) {
+    const cards = e.target.closest('.category').querySelectorAll('.concept');
+    const allOpen = [...cards].every(c => c.classList.contains('open'));
+    cards.forEach(c => c.classList.toggle('open', !allOpen));
+  }
+});
+</script>
+</body>
+</html>
